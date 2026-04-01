@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Space Evaluation Survey</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --bg: #f8f9fa;
+            --card: #ffffff;
+            --text: #333;
+            --muted: #888;
+            --border: #e0e0e0;
+            --likert-hover: #eaf4fc;
+            --likert-selected: #3498db;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* ── Top bar ── */
+        .topbar {
+            background: var(--primary);
+            color: #fff;
+            padding: 14px 24px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky; top: 0; z-index: 200;
+        }
+        .topbar .progress-text { font-size: 13px; opacity: 0.8; }
+        .progress-bar-bg {
+            height: 4px; background: rgba(255,255,255,0.2);
+            border-radius: 2px; width: 200px;
+        }
+        .progress-bar-fill {
+            height: 100%; background: #2ecc71;
+            border-radius: 2px; transition: width 0.4s;
+        }
+
+        /* ── Page container ── */
+        .page { display: none; max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+        .page.active { display: block; }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        .card h2 { font-size: 20px; margin-bottom: 16px; color: var(--primary); }
+        .card p { font-size: 14px; color: #555; margin-bottom: 16px; }
+
+        /* ── 360° Viewer ── */
+        .viewer-wrap {
+            width: 100%;
+            height: 480px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .viewer-wrap .pnlm-controls-container { display: none !important; }
+        .viewer-hint {
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+
+        /* ── Likert ── */
+        .dimension-group {
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .dimension-group:last-child { border-bottom: none; }
+        .dim-label {
+            font-size: 15px; font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+        .question-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 16px;
+            padding: 10px 0;
+        }
+        .question-text { font-size: 14px; }
+        .likert-scale {
+            display: flex; gap: 6px; align-items: center;
+        }
+        .likert-scale .anchor { font-size: 11px; color: var(--muted); min-width: 60px; text-align: center; }
+        .likert-scale .anchor:first-child { text-align: right; }
+        .likert-scale .anchor:last-child { text-align: left; }
+        .likert-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 13px;
+            color: var(--muted);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .likert-btn:hover { border-color: var(--accent); background: var(--likert-hover); }
+        .likert-btn.selected {
+            border-color: var(--likert-selected);
+            background: var(--likert-selected);
+            color: #fff;
+        }
+
+        /* ── Form inputs ── */
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block; font-size: 14px; font-weight: 600;
+            margin-bottom: 6px; color: var(--primary);
+        }
+        .form-group select, .form-group input {
+            width: 100%; padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px; font-size: 14px;
+            background: #fff;
+        }
+        .form-group select:focus, .form-group input:focus {
+            outline: none; border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(52,152,219,0.15);
+        }
+
+        /* ── WTP ── */
+        .wtp-input {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .wtp-input span { font-size: 20px; font-weight: 600; color: var(--primary); }
+        .wtp-input input {
+            width: 160px; padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px; font-size: 18px; text-align: center;
+        }
+
+        /* ── Navigation ── */
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #fff;
+            border-top: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex; justify-content: center; gap: 16px;
+            z-index: 200;
+        }
+        .nav-btn {
+            padding: 12px 40px;
+            border-radius: 8px;
+            font-size: 15px; font-weight: 600;
+            cursor: pointer; border: none;
+            transition: all 0.2s;
+        }
+        .btn-next { background: var(--accent); color: #fff; }
+        .btn-next:hover { background: #2980b9; }
+        .btn-back { background: #ecf0f1; color: var(--primary); }
+        .btn-back:hover { background: #d5dbdb; }
+        .btn-next:disabled { background: #bdc3c7; cursor: not-allowed; }
+
+        /* ── Consent ── */
+        .consent-box {
+            background: #fafafa; border: 1px solid var(--border);
+            border-radius: 8px; padding: 20px;
+            max-height: 300px; overflow-y: auto;
+            font-size: 13px; color: #555;
+            margin-bottom: 16px;
+        }
+        .consent-check { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .consent-check input { width: 18px; height: 18px; }
+
+        /* ── Completion ── */
+        .completion-code {
+            background: #f0faf0; border: 2px solid #2ecc71;
+            border-radius: 10px; padding: 24px;
+            text-align: center; font-size: 24px;
+            font-weight: 700; letter-spacing: 4px;
+            color: #27ae60;
+        }
+
+        /* ── Validation warning ── */
+        .warning { color: #e74c3c; font-size: 13px; margin-top: 4px; display: none; }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .question-row { grid-template-columns: 1fr; gap: 8px; }
+            .viewer-wrap { height: 300px; }
+            .likert-btn { width: 32px; height: 32px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══ -->
+<div class="topbar">
+    <span>Hotel Space Evaluation</span>
+    <div style="display:flex; align-items:center; gap:12px;">
+        <span class="progress-text" id="progressText">Page 1 / ?</span>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
+    </div>
+</div>
+
+<!-- ═══ PAGES CONTAINER ═══ -->
+<div id="pagesContainer"></div>
+
+<!-- ═══ NAVIGATION ═══ -->
+<div class="nav-bar">
+    <button class="nav-btn btn-back" id="btnBack" onclick="prevPage()">Back</button>
+    <button class="nav-btn btn-next" id="btnNext" onclick="nextPage()">Next</button>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURATION — 여기만 수정하세요
+// ============================================================
+
+const CONFIG = {
+    // GitHub Pages base URL (본인 URL로 변경)
+    viewerBaseUrl: './viewer.html',
+
+    // 호텔 목록 (이미지 파일명)
+    hotels: [
+        { id: 'hotel_01', label: 'Hotel A', lobby: 'hotel_01_lobby.png', room: 'hotel_01_room.png' },
+        // 호텔 추가 시 아래에 계속 추가
+        // { id: 'hotel_02', label: 'Hotel B', lobby: 'hotel_02_lobby.png', room: 'hotel_02_room.png' },
+        // ...
+    ],
+
+    // Google Sheets Web App URL (배포 후 입력)
+    googleSheetsUrl: '',
+
+    // Prolific 완료 URL (Prolific 사용 시 입력)
+    prolificReturnUrl: '',
+};
+
+// ============================================================
+// S-O-R DIMENSIONS & ITEMS (from eval_pipeline_v9.py)
+// ============================================================
+
+const DIMENSIONS = [
+    { code:'S-1', name:'Design Aesthetics', sor:'S', items:[
+        {code:'S-1-1', text:'This space is visually striking.'},
+        {code:'S-1-2', text:'The overall style of this space is refined.'},
+        {code:'S-1-3', text:'The style of the ornaments and artworks is appealing.'},
+        {code:'S-1-4', text:'The design of this space is artful.'},
+        {code:'S-1-5', text:'The flooring design looks attractive.'},
+    ]},
+    { code:'S-2', name:'Color', sor:'S', items:[
+        {code:'S-2-1', text:'The colors of this space are beautiful.'},
+        {code:'S-2-2', text:'The color scheme of this space is visually soothing.'},
+        {code:'S-2-3', text:'The colors of the surfaces are well-coordinated.'},
+    ]},
+    { code:'S-3', name:'Lighting', sor:'S', items:[
+        {code:'S-3-1', text:'The lighting in this space is appropriate.'},
+        {code:'S-3-2', text:'This space receives good natural light.'},
+        {code:'S-3-3', text:'The lighting in this space creates a positive visual effect.'},
+        {code:'S-3-4', text:'The lighting design effectively sets the mood of this space.'},
+    ]},
+    { code:'S-4', name:'Spatial Functionality', sor:'S', items:[
+        {code:'S-4-1', text:'The layout of this space makes it easy to move around.'},
+        {code:'S-4-2', text:'The furniture positioning looks practical.'},
+        {code:'S-4-3', text:'The spacing between the furniture appears adequate.'},
+        {code:'S-4-4', text:'The spatial arrangement looks well-proportioned.'},
+    ]},
+    { code:'S-5', name:'Spaciousness', sor:'S', items:[
+        {code:'S-5-1', text:'This space provides plenty of room.'},
+        {code:'S-5-2', text:'This space gives a feeling of spaciousness.'},
+        {code:'S-5-3', text:'The amount of space in this area is adequate.'},
+    ]},
+    { code:'S-6', name:'Design Innovativeness', sor:'S', items:[
+        {code:'S-6-1', text:'The design of this space is innovative.'},
+        {code:'S-6-2', text:'The design features of this space are unique.'},
+        {code:'S-6-3', text:'This space departs from typical hotel designs.'},
+    ]},
+    { code:'O-1', name:'Pleasure', sor:'O', items:[
+        {code:'O-1-1', text:'I feel pleased when looking at this space.'},
+        {code:'O-1-2', text:'I feel a sense of amazement when looking at this space.'},
+        {code:'O-1-3', text:'This space makes me feel delighted.'},
+        {code:'O-1-4', text:'I feel inspired when looking at this space.'},
+    ]},
+    { code:'O-2', name:'Arousal', sor:'O', items:[
+        {code:'O-2-1', text:'This space makes me feel stimulated.'},
+        {code:'O-2-2', text:'This space makes me feel excited.'},
+        {code:'O-2-3', text:'This space makes me feel calm.'},
+        {code:'O-2-4', text:'This space makes me feel peaceful.'},
+    ]},
+    { code:'O-3', name:'Quality Expectation', sor:'O', items:[
+        {code:'O-3-1', text:'This space appears to be of good quality.'},
+        {code:'O-3-2', text:'This space looks well-maintained.'},
+        {code:'O-3-3', text:'This space appears to fulfill its intended function well.'},
+    ]},
+    { code:'O-4', name:'Overall Attitude', sor:'O', items:[
+        {code:'O-4-1', text:'My overall impression of this space is good.'},
+        {code:'O-4-2', text:'I have a positive attitude toward this space.'},
+        {code:'O-4-3', text:'I feel favorable toward this space.'},
+    ]},
+    { code:'R-1', name:'Booking Intention', sor:'R', items:[
+        {code:'R-1-1', text:'My willingness to book this hotel is high.'},
+        {code:'R-1-2', text:'The probability that I would book this hotel is high.'},
+        {code:'R-1-3', text:'I would definitely consider reserving this hotel.'},
+    ]},
+    { code:'R-2', name:'Recommendation Intention', sor:'R', items:[
+        {code:'R-2-1', text:'I will say positive things about this hotel to others.'},
+        {code:'R-2-2', text:'I will recommend this hotel to my friends and family.'},
+        {code:'R-2-3', text:'I will recommend this hotel to someone who seeks my advice.'},
+    ]},
+];
+
+// ============================================================
+// STATE
+// ============================================================
+
+let currentPage = 0;
+let totalPages = 0;
+const responses = {};
+let participantId = 'P_' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
+
+// ============================================================
+// BUILD PAGES
+// ============================================================
+
+function buildAllPages() {
+    const container = document.getElementById('pagesContainer');
+    let pageIndex = 0;
+
+    // — Page: Consent —
+    container.innerHTML += buildConsentPage(pageIndex++);
+
+    // — Page: Demographics —
+    container.innerHTML += buildDemoPage(pageIndex++);
+
+    // — Pages: Hotels (lobby + room for each) —
+    CONFIG.hotels.forEach((hotel, hi) => {
+        container.innerHTML += buildHotelPage(pageIndex++, hotel, 'lobby', hotel.lobby);
+        container.innerHTML += buildHotelPage(pageIndex++, hotel, 'room', hotel.room);
+    });
+
+    // — Page: Completion —
+    container.innerHTML += buildCompletionPage(pageIndex++);
+
+    totalPages = pageIndex;
+    showPage(0);
+}
+
+function buildConsentPage(idx) {
+    return `
+    <div class="page" data-page="${idx}">
+        <div class="card">
+            <h2>Informed Consent</h2>
+            <div class="consent-box">
+                <p><strong>Study Title:</strong> Visual Assessment of Hotel Interior Spaces</p>
+                <p><strong>Purpose:</strong> This study examines how people evaluate hotel interior spaces using 360° panoramic images.</p>
+                <p><strong>Procedure:</strong> You will view 360° panoramic images of hotel lobbies and rooms. For each space, you will look around the space by dragging the image, then answer evaluation questions. The entire survey takes approximately 15-20 minutes.</p>
+                <p><strong>Risks:</strong> There are no known risks associated with this study.</p>
+                <p><strong>Confidentiality:</strong> Your responses will be anonymous and used only for academic research purposes.</p>
+                <p><strong>Voluntary Participation:</strong> Your participation is voluntary. You may withdraw at any time without penalty.</p>
+                <p><strong>Contact:</strong> If you have questions, please contact the research team at [email].</p>
+            </div>
+            <div class="consent-check">
+                <input type="checkbox" id="consentCheck" onchange="updateNav()">
+                <label for="consentCheck">I have read and understood the above information and agree to participate in this study.</label>
+            </div>
+        </div>
+    </div>`;
+}
+
+function buildDemoPage(idx) {
+    return `
+    <div class="page" data-page="${idx}">
+        <div class="card">
+            <h2>About You</h2>
+            <p>Please answer the following questions about yourself.</p>
+
+            <div class="form-group">
+                <label>Age</label>
+                <select id="demo_age" onchange="updateNav()">
+                    <option value="">Select...</option>
+                    <option>18-24</option><option>25-34</option><option>35-44</option>
+                    <option>45-54</option><option>55-64</option><option>65+</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Gender</label>
+                <select id="demo_gender" onchange="updateNav()">
+                    <option value="">Select...</option>
+                    <option>Male</option><option>Female</option>
+                    <option>Non-binary</option><option>Prefer not to say</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>How often do you stay at hotels per year?</label>
+                <select id="demo_frequency" onchange="updateNav()">
+                    <option value="">Select...</option>
+                    <option>0 times</option><option>1-2 times</option><option>3-5 times</option>
+                    <option>6-10 times</option><option>More than 10 times</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Primary purpose of hotel stays</label>
+                <select id="demo_purpose" onchange="updateNav()">
+                    <option value="">Select...</option>
+                    <option>Leisure/Vacation</option><option>Business</option>
+                    <option>Both equally</option><option>Other</option>
+                </select>
+            </div>
+        </div>
+    </div>`;
+}
+
+function buildHotelPage(idx, hotel, spaceType, imageFile) {
+    const spaceLabel = spaceType === 'lobby' ? 'Lobby' : 'Room';
+    const pageKey = `${hotel.id}_${spaceType}`;
+
+    let questionsHtml = '';
+    DIMENSIONS.forEach(dim => {
+        const sorLabel = dim.sor === 'S' ? 'Stimulus' : dim.sor === 'O' ? 'Organism' : 'Response';
+        questionsHtml += `<div class="dimension-group">`;
+        questionsHtml += `<div class="dim-label">${dim.name}</div>`;
+        dim.items.forEach(item => {
+            const key = `${pageKey}_${item.code}`;
+            questionsHtml += `
+                <div class="question-row">
+                    <div class="question-text">${item.text}</div>
+                    <div class="likert-scale">
+                        <span class="anchor">Strongly<br>Disagree</span>
+                        ${[1,2,3,4,5,6,7].map(v =>
+                            `<div class="likert-btn" data-key="${key}" data-value="${v}"
+                                 onclick="selectLikert(this,'${key}',${v})">${v}</div>`
+                        ).join('')}
+                        <span class="anchor">Strongly<br>Agree</span>
+                    </div>
+                </div>`;
+        });
+        questionsHtml += `</div>`;
+    });
+
+    // WTP (room only)
+    let wtpHtml = '';
+    if (spaceType === 'room') {
+        const wtpKey = `${pageKey}_WTP`;
+        wtpHtml = `
+        <div class="dimension-group">
+            <div class="dim-label">Willingness to Pay</div>
+            <div class="question-row">
+                <div class="question-text">Please indicate the maximum price you would be willing to pay <strong>per night</strong> for this room.</div>
+                <div class="wtp-input">
+                    <span>$</span>
+                    <input type="number" id="${wtpKey}" min="0" max="9999"
+                           placeholder="0" onchange="responses['${wtpKey}']=this.value; updateNav()">
+                </div>
+            </div>
+        </div>`;
+    }
+
+    return `
+    <div class="page" data-page="${idx}" data-hotel="${hotel.id}" data-space="${spaceType}">
+        <div class="card">
+            <h2>${hotel.label} — ${spaceLabel}</h2>
+            <p>Please look around this hotel ${spaceLabel.toLowerCase()} by dragging the image below. Take your time to observe from every angle, then answer the questions.</p>
+            <div class="viewer-wrap" id="viewer_${pageKey}"></div>
+            <div class="viewer-hint">Drag to look around</div>
+        </div>
+        <div class="card">
+            <h2>Evaluation</h2>
+            <p>Please rate each statement based on what you observed. (1 = Strongly Disagree, 7 = Strongly Agree)</p>
+            ${questionsHtml}
+            ${wtpHtml}
+        </div>
+    </div>`;
+}
+
+function buildCompletionPage(idx) {
+    return `
+    <div class="page" data-page="${idx}">
+        <div class="card" style="text-align:center;">
+            <h2>Thank You!</h2>
+            <p style="font-size:16px; margin-bottom:24px;">Your responses have been recorded successfully.</p>
+            <p style="margin-bottom:16px;">Your completion code:</p>
+            <div class="completion-code" id="completionCode">LOADING...</div>
+            <p style="margin-top:16px; font-size:14px; color:var(--muted);">
+                Please copy this code and paste it back in Prolific to confirm your participation.
+            </p>
+        </div>
+    </div>`;
+}
+
+// ============================================================
+// LIKERT SELECTION
+// ============================================================
+
+function selectLikert(el, key, value) {
+    // Deselect siblings
+    el.parentElement.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    responses[key] = value;
+    updateNav();
+}
+
+// ============================================================
+// 360° VIEWER INIT
+// ============================================================
+
+let activeViewer = null;
+
+function initViewer(pageEl) {
+    const hotel = pageEl.dataset.hotel;
+    const space = pageEl.dataset.space;
+    if (!hotel || !space) return;
+
+    const hotelConf = CONFIG.hotels.find(h => h.id === hotel);
+    if (!hotelConf) return;
+
+    const imageFile = space === 'lobby' ? hotelConf.lobby : hotelConf.room;
+    const viewerId = `viewer_${hotel}_${space}`;
+    const viewerEl = document.getElementById(viewerId);
+
+    if (!viewerEl || viewerEl.dataset.loaded === 'true') return;
+
+    activeViewer = pannellum.viewer(viewerId, {
+        type: 'equirectangular',
+        panorama: `./images/${imageFile}`,
+        autoLoad: true,
+        hfov: 100, minHfov: 100, maxHfov: 100,
+        minPitch: -60, maxPitch: 60,
+        pitch: 0, yaw: 0,
+        autoRotate: false,
+        showZoomCtrl: false, showFullscreenCtrl: false,
+        mouseZoom: false,
+        friction: 0.3, yawSpeed: 1, pitchSpeed: 1,
+        compass: false,
+        strings: { loadingLabel: "Loading..." }
+    });
+
+    viewerEl.dataset.loaded = 'true';
+}
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+
+function showPage(idx) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const page = document.querySelector(`.page[data-page="${idx}"]`);
+    if (page) {
+        page.classList.add('active');
+        window.scrollTo(0, 0);
+
+        // Init viewer if hotel page
+        setTimeout(() => initViewer(page), 100);
+    }
+
+    currentPage = idx;
+    updateNav();
+    updateProgress();
+}
+
+function nextPage() {
+    if (currentPage === totalPages - 2) {
+        // Last content page → submit → show completion
+        submitData();
+        showPage(currentPage + 1);
+        return;
+    }
+    if (currentPage < totalPages - 1) {
+        showPage(currentPage + 1);
+    }
+}
+
+function prevPage() {
+    if (currentPage > 0) showPage(currentPage - 1);
+}
+
+function updateNav() {
+    const backBtn = document.getElementById('btnBack');
+    const nextBtn = document.getElementById('btnNext');
+
+    backBtn.style.display = currentPage === 0 ? 'none' : 'inline-block';
+
+    if (currentPage === totalPages - 1) {
+        // Completion page
+        nextBtn.style.display = 'none';
+        backBtn.style.display = 'none';
+    } else if (currentPage === totalPages - 2) {
+        nextBtn.textContent = 'Submit';
+    } else {
+        nextBtn.textContent = 'Next';
+    }
+
+    // Validation
+    nextBtn.disabled = !isPageValid(currentPage);
+}
+
+function isPageValid(idx) {
+    const page = document.querySelector(`.page[data-page="${idx}"]`);
+    if (!page) return false;
+
+    // Consent page
+    const consent = page.querySelector('#consentCheck');
+    if (consent) return consent.checked;
+
+    // Demographics page
+    const selects = page.querySelectorAll('select');
+    if (selects.length > 0 && !page.dataset.hotel) {
+        return Array.from(selects).every(s => s.value !== '');
+    }
+
+    // Hotel pages — all likert answered
+    const likerts = page.querySelectorAll('.likert-scale');
+    if (likerts.length > 0) {
+        return Array.from(likerts).every(ls => ls.querySelector('.selected'));
+    }
+
+    return true;
+}
+
+function updateProgress() {
+    const pct = Math.round((currentPage / (totalPages - 1)) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = `Page ${currentPage + 1} / ${totalPages}`;
+}
+
+// ============================================================
+// DATA SUBMISSION
+// ============================================================
+
+function collectAllData() {
+    // Demographics
+    const demo = {
+        age: document.getElementById('demo_age')?.value || '',
+        gender: document.getElementById('demo_gender')?.value || '',
+        frequency: document.getElementById('demo_frequency')?.value || '',
+        purpose: document.getElementById('demo_purpose')?.value || '',
+    };
+
+    return {
+        participantId,
+        timestamp: new Date().toISOString(),
+        demographics: demo,
+        responses: { ...responses },
+    };
+}
+
+function submitData() {
+    const data = collectAllData();
+    console.log('Survey data:', JSON.stringify(data, null, 2));
+
+    // Generate completion code
+    const code = 'C' + Math.random().toString(36).substr(2, 8).toUpperCase();
+    document.getElementById('completionCode').textContent = code;
+
+    // Send to Google Sheets (if URL configured)
+    if (CONFIG.googleSheetsUrl) {
+        fetch(CONFIG.googleSheetsUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        }).catch(err => console.error('Submit error:', err));
+    }
+
+    // Redirect to Prolific (if configured)
+    if (CONFIG.prolificReturnUrl) {
+        setTimeout(() => {
+            window.location.href = CONFIG.prolificReturnUrl + '?cc=' + code;
+        }, 5000);
+    }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+buildAllPages();
+</script>
+</body>
+</html>
