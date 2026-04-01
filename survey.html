@@ -85,13 +85,13 @@
         .viewer-section p { font-size: 12px; margin-bottom: 8px; }
         .viewer-wrap {
             width: 100%;
-            height: 300px;
+            height: 506px;
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
         .viewer-wrap .pnlm-controls-container { display: none !important; }
-        .has-viewer { padding-top: 410px !important; }
+        .has-viewer { padding-top: 620px !important; }
 
         /* ── Likert ── */
         .dimension-group {
@@ -230,7 +230,7 @@
             .viewer-section .card { padding: 8px 12px; }
             .viewer-section h2 { font-size: 14px; }
             .viewer-section p { font-size: 11px; margin-bottom: 6px; }
-            .has-viewer { padding-top: 310px !important; }
+            .has-viewer { padding-top: 300px !important; }
             .likert-scale {
                 justify-content: center;
                 gap: 4px;
@@ -262,8 +262,11 @@
 <!-- ═══ FIXED 360° VIEWER (shown on hotel pages) ═══ -->
 <div class="viewer-section" id="fixedViewer">
     <div class="card">
-        <h2 id="viewerTitle">Hotel — Space</h2>
-        <p>Drag the image to look around, then scroll down to answer.</p>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+            <h2 id="viewerTitle" style="margin:0; font-size:16px;">Hotel — Space</h2>
+            <span id="viewerBadge" style="display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; color:#fff;">Lobby</span>
+        </div>
+        <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">Drag the image to look around, then scroll down to answer.</p>
         <div class="viewer-wrap" id="viewerPano"></div>
     </div>
 </div>
@@ -287,11 +290,12 @@ const CONFIG = {
     viewerBaseUrl: './viewer.html',
 
     // 호텔 목록 (이미지 파일명)
+    // 호텔을 추가하려면 아래 배열에 계속 추가하면 됩니다
     hotels: [
         { id: 'hotel_01', label: 'Hotel A', lobby: 'hotel_01_lobby.png', room: 'hotel_01_room.png' },
-        // 호텔 추가 시 아래에 계속 추가
         // { id: 'hotel_02', label: 'Hotel B', lobby: 'hotel_02_lobby.png', room: 'hotel_02_room.png' },
-        // ...
+        // { id: 'hotel_03', label: 'Hotel C', lobby: 'hotel_03_lobby.png', room: 'hotel_03_room.png' },
+        // ... 15개까지 추가 가능. 주석 해제하고 파일명만 맞추면 됨
     ],
 
     // Google Sheets Web App URL (배포 후 입력)
@@ -397,8 +401,9 @@ function buildAllPages() {
     // — Page: Demographics —
     container.innerHTML += buildDemoPage(pageIndex++);
 
-    // — Pages: Hotels (lobby + room for each) —
+    // — Pages: Hotels (transition + lobby + room for each) —
     CONFIG.hotels.forEach((hotel, hi) => {
+        container.innerHTML += buildTransitionPage(pageIndex++, hotel, hi + 1, CONFIG.hotels.length);
         container.innerHTML += buildHotelPage(pageIndex++, hotel, 'lobby', hotel.lobby);
         container.innerHTML += buildHotelPage(pageIndex++, hotel, 'room', hotel.room);
     });
@@ -408,6 +413,26 @@ function buildAllPages() {
 
     totalPages = pageIndex;
     showPage(0);
+}
+
+function buildTransitionPage(idx, hotel, hotelNum, totalHotels) {
+    return `
+    <div class="page" data-page="${idx}">
+        <div class="card" style="text-align:center; padding:48px 28px;">
+            <div style="font-size:48px; margin-bottom:16px;">🏨</div>
+            <div style="font-size:13px; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:2px;">
+                Hotel ${hotelNum} of ${totalHotels}
+            </div>
+            <h2 style="font-size:28px; margin-bottom:16px;">${hotel.label}</h2>
+            <p style="font-size:15px; color:#555; max-width:500px; margin:0 auto 24px;">
+                You will now evaluate this hotel's <strong>lobby</strong> and <strong>room</strong>.<br>
+                For each space, look around the 360° image, then answer the questions.
+            </p>
+            <div style="display:inline-block; background:#eaf4fc; border-radius:8px; padding:12px 24px; font-size:14px; color:var(--primary);">
+                📋 Lobby evaluation → Room evaluation
+            </div>
+        </div>
+    </div>`;
 }
 
 function buildConsentPage(idx) {
@@ -526,11 +551,17 @@ function buildHotelPage(idx, hotel, spaceType, imageFile) {
         </div>`;
     }
 
+    const badgeColor = spaceType === 'lobby' ? '#3498db' : '#2ecc71';
+    const badgeIcon = spaceType === 'lobby' ? '🏛' : '🛏';
+
     return `
     <div class="page has-viewer" data-page="${idx}" data-hotel="${hotel.id}" data-space="${spaceType}"
-         data-viewer-label="${hotel.label} — ${spaceLabel}" data-viewer-image="${imageFile}">
+         data-viewer-label="${hotel.label}" data-viewer-image="${imageFile}">
         <div class="card">
-            <h2>Evaluation</h2>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                <h2 style="margin:0;">${hotel.label}</h2>
+                <span style="display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; color:#fff; background:${badgeColor};">${badgeIcon} ${spaceLabel}</span>
+            </div>
             <p>Please rate each statement based on what you observed. (1 = Strongly Disagree, 7 = Strongly Agree)</p>
             ${questionsHtml}
             ${wtpHtml}
@@ -575,15 +606,26 @@ let currentViewerImage = null;
 function initViewer(pageEl) {
     const imageFile = pageEl.dataset.viewerImage;
     const label = pageEl.dataset.viewerLabel;
+    const space = pageEl.dataset.space;
     if (!imageFile) return;
 
     const fixedViewer = document.getElementById('fixedViewer');
     const viewerPano = document.getElementById('viewerPano');
     const viewerTitle = document.getElementById('viewerTitle');
+    const viewerBadge = document.getElementById('viewerBadge');
 
     // Show fixed viewer
     fixedViewer.classList.add('active');
     viewerTitle.textContent = label;
+
+    // Badge: Lobby = blue, Room = green
+    if (space === 'lobby') {
+        viewerBadge.textContent = '🏛 Lobby';
+        viewerBadge.style.background = '#3498db';
+    } else {
+        viewerBadge.textContent = '🛏 Room';
+        viewerBadge.style.background = '#2ecc71';
+    }
 
     // Only re-init if different image
     if (currentViewerImage === imageFile) return;
