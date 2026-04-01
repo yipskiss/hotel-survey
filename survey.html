@@ -63,17 +63,30 @@
         .card p { font-size: 14px; color: #555; margin-bottom: 16px; }
 
         /* ── 360° Viewer ── */
-        .viewer-card {
-            position: sticky;
-            top: 52px; /* topbar height */
-            z-index: 100;
+        .hotel-page-layout {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 52px); /* minus topbar */
         }
+        .viewer-section {
+            position: sticky;
+            top: 52px;
+            z-index: 100;
+            background: var(--bg);
+            padding: 12px 0 8px;
+            flex-shrink: 0;
+        }
+        .viewer-section .card {
+            margin-bottom: 0;
+            padding: 16px 20px;
+        }
+        .viewer-section h2 { font-size: 18px; margin-bottom: 8px; }
+        .viewer-section p { font-size: 13px; margin-bottom: 10px; }
         .viewer-wrap {
             width: 100%;
-            height: 360px;
+            height: 340px;
             border-radius: 10px;
             overflow: hidden;
-            margin-bottom: 8px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
         .viewer-wrap .pnlm-controls-container { display: none !important; }
@@ -204,7 +217,7 @@
         /* ── Responsive ── */
         @media (max-width: 768px) {
             .question-row { grid-template-columns: 1fr; gap: 8px; }
-            .viewer-wrap { height: 250px; }
+            .viewer-wrap { height: 220px; }
             .likert-btn { width: 32px; height: 32px; font-size: 12px; }
         }
     </style>
@@ -477,11 +490,12 @@ function buildHotelPage(idx, hotel, spaceType, imageFile) {
 
     return `
     <div class="page" data-page="${idx}" data-hotel="${hotel.id}" data-space="${spaceType}">
-        <div class="card viewer-card">
-            <h2>${hotel.label} — ${spaceLabel}</h2>
-            <p>Please look around this hotel ${spaceLabel.toLowerCase()} by dragging the image below. Take your time to observe from every angle, then answer the questions.</p>
-            <div class="viewer-wrap" id="viewer_${pageKey}"></div>
-            <div class="viewer-hint">Drag to look around</div>
+        <div class="viewer-section">
+            <div class="card">
+                <h2>${hotel.label} — ${spaceLabel}</h2>
+                <p>Drag the image to look around, then scroll down to answer.</p>
+                <div class="viewer-wrap" id="viewer_${pageKey}"></div>
+            </div>
         </div>
         <div class="card">
             <h2>Evaluation</h2>
