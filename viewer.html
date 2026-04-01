@@ -85,9 +85,9 @@
 
     <script>
         // URL 파라미터에서 이미지 읽기
-        // 사용법: viewer.html?image=hotel_01_lobby.jpg
+        // 사용법: viewer.html?image=hotel_01_lobby.png
         const params = new URLSearchParams(window.location.search);
-        const imageFile = params.get('image') || 'default.jpg';
+        const imageFile = params.get('image') || 'default.png';
         const imagePath = './images/' + imageFile;
 
         const viewer = pannellum.viewer('panorama', {
@@ -105,7 +105,10 @@
             showZoomCtrl: false,
             showFullscreenCtrl: false,
             mouseZoom: false,
-            friction: 0.15,
+            // 드래그 감도 (낮을수록 느림)
+            friction: 0.3,
+            yawSpeed: 1,
+            pitchSpeed: 1,
             compass: false,
             strings: { loadingLabel: "Loading..." }
         });
