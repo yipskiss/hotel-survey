@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel 360° Survey — Test Page</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 24px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 32px;
+            font-size: 14px;
+        }
+        .note {
+            max-width: 700px;
+            margin: 0 auto 32px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 13px;
+            color: #856404;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-3px); }
+        .card-header {
+            padding: 12px 16px;
+            background: #2c3e50;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .card-header .type {
+            font-weight: 400;
+            opacity: 0.7;
+            font-size: 12px;
+        }
+        .card-body {
+            padding: 16px;
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn-lobby {
+            background: #3498db;
+            color: #fff;
+        }
+        .btn-lobby:hover { background: #2980b9; }
+        .btn-room {
+            background: #2ecc71;
+            color: #fff;
+        }
+        .btn-room:hover { background: #27ae60; }
+        .btn-disabled {
+            background: #ddd;
+            color: #999;
+            pointer-events: none;
+        }
+
+        .qualtrics-section {
+            max-width: 700px;
+            margin: 40px auto 0;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 24px;
+        }
+        .qualtrics-section h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            white-space: pre;
+            margin: 12px 0;
+        }
+        .code-block .highlight { color: #9cdcfe; }
+        .code-block .string { color: #ce9178; }
+        .code-block .comment { color: #6a9955; }
+    </style>
+</head>
+<body>
+
+    <h1>Hotel 360° Survey — Test Page</h1>
+    <p class="subtitle">Researcher only — verify all panoramas before launching the survey</p>
+
+    <div class="note">
+        <strong>Setup instructions:</strong>
+        Place your 360° equirectangular images in the <code>/images/</code> folder.
+        File naming convention: <code>hotel_01_lobby.jpg</code>, <code>hotel_01_room.jpg</code>, etc.
+        Then click each button below to verify the panorama loads correctly.
+    </div>
+
+    <div class="grid" id="hotelGrid"></div>
+
+    <div class="qualtrics-section">
+        <h2>Qualtrics Embed Code</h2>
+        <p style="font-size:14px; color:#666; margin-bottom:12px;">
+            Copy this iframe code into a Qualtrics question (HTML mode).
+            Replace the URL with your GitHub Pages URL and the image filename.
+        </p>
+        <div class="code-block"><span class="comment">// Qualtrics 질문 → HTML 편집 모드에서 붙여넣기</span>
+
+&lt;iframe
+  src="<span class="string">https://YOUR_USERNAME.github.io/survey/viewer.html?image=hotel_01_lobby.jpg</span>"
+  width="<span class="highlight">960</span>"
+  height="<span class="highlight">560</span>"
+  frameborder="0"
+  allow="gyroscope"
+  style="border-radius:10px; display:block; margin:0 auto;"
+&gt;&lt;/iframe&gt;</div>
+
+        <p style="font-size:13px; color:#888; margin-top:12px;">
+            <strong>Tip:</strong> Each hotel/space gets its own Qualtrics page.
+            Just change <code>?image=hotel_XX_lobby.jpg</code> for each page.
+        </p>
+    </div>
+
+    <script>
+        const NUM_HOTELS = 15;
+        const grid = document.getElementById('hotelGrid');
+
+        for (let i = 1; i <= NUM_HOTELS; i++) {
+            const num = String(i).padStart(2, '0');
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-header">
+                    Hotel ${num}
+                    <span class="type">• Lobby & Room</span>
+                </div>
+                <div class="card-body">
+                    <a class="btn btn-lobby"
+                       href="viewer.html?image=hotel_${num}_lobby.jpg"
+                       target="_blank">
+                        🏛 Lobby
+                    </a>
+                    <a class="btn btn-room"
+                       href="viewer.html?image=hotel_${num}_room.jpg"
+                       target="_blank">
+                        🛏 Room
+                    </a>
+                </div>
+            `;
+            grid.appendChild(card);
+        }
+    </script>
+
+</body>
+</html>

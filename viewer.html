@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Space 360° View</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+    <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #111;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .instruction {
+            text-align: center;
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #ccc;
+            max-width: 640px;
+        }
+        .instruction strong { color: #fff; font-size: 15px; }
+
+        #panorama-container {
+            width: 100%;
+            max-width: 960px;
+            height: 540px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            position: relative;
+        }
+        #panorama { width: 100%; height: 100%; }
+
+        .pnlm-controls-container { display: none !important; }
+
+        .drag-hint {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%);
+            background: rgba(0,0,0,0.7);
+            padding: 20px 32px;
+            border-radius: 12px;
+            text-align: center;
+            z-index: 100;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+        .drag-hint .icon { font-size: 36px; margin-bottom: 8px; }
+        .drag-hint .text { font-size: 14px; color: #ddd; }
+        .drag-hint.hidden { opacity: 0; }
+
+        @media (max-width: 768px) {
+            #panorama-container { height: 300px; border-radius: 6px; }
+            .instruction { font-size: 12px; padding: 8px 16px; margin: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="instruction">
+        <strong>Please look around the hotel space by dragging the image in all directions.</strong><br>
+        Take your time to observe the space from every angle before answering the questions below.
+    </div>
+
+    <div id="panorama-container">
+        <div id="panorama"></div>
+        <div class="drag-hint" id="dragHint">
+            <div class="icon">↔ ↕</div>
+            <div class="text">Click and drag to look around</div>
+        </div>
+    </div>
+
+    <script>
+        // URL 파라미터에서 이미지 읽기
+        // 사용법: viewer.html?image=hotel_01_lobby.jpg
+        const params = new URLSearchParams(window.location.search);
+        const imageFile = params.get('image') || 'default.jpg';
+        const imagePath = './images/' + imageFile;
+
+        const viewer = pannellum.viewer('panorama', {
+            type: 'equirectangular',
+            panorama: imagePath,
+            autoLoad: true,
+            hfov: 120,
+            minHfov: 120,
+            maxHfov: 120,
+            minPitch: -60,
+            maxPitch: 60,
+            pitch: 0,
+            yaw: 0,
+            autoRotate: false,
+            showZoomCtrl: false,
+            showFullscreenCtrl: false,
+            mouseZoom: false,
+            friction: 0.15,
+            compass: false,
+            strings: { loadingLabel: "Loading..." }
+        });
+
+        // 드래그 안내 (3초 후 또는 첫 터치 시 사라짐)
+        const hint = document.getElementById('dragHint');
+        setTimeout(() => hint.classList.add('hidden'), 3000);
+        document.getElementById('panorama').addEventListener('mousedown', () => hint.classList.add('hidden'));
+        document.getElementById('panorama').addEventListener('touchstart', () => hint.classList.add('hidden'));
+
+        // 체류 시간 & 회전량 추적 → Qualtrics에 postMessage로 전달
+        let startTime = Date.now();
+        let totalRotation = 0;
+        let lastYaw = 0, lastPitch = 0;
+
+        viewer.on('mouseup', function() {
+            const y = viewer.getYaw(), p = viewer.getPitch();
+            totalRotation += Math.abs(y - lastYaw) + Math.abs(p - lastPitch);
+            lastYaw = y; lastPitch = p;
+        });
+
+        // 페이지 떠날 때 데이터 전달
+        window.addEventListener('beforeunload', () => {
+            const data = {
+                timeSpent: Math.floor((Date.now() - startTime) / 1000),
+                totalRotation: Math.floor(totalRotation),
+                image: imageFile
+            };
+            if (window.parent !== window) {
+                window.parent.postMessage(JSON.stringify(data), '*');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+Place your 360° equirectangular panorama images here.
+Naming: hotel_01_lobby.jpg, hotel_01_room.jpg, etc.
