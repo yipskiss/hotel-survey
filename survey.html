@@ -63,9 +63,14 @@
         .card p { font-size: 14px; color: #555; margin-bottom: 16px; }
 
         /* ── 360° Viewer ── */
+        .viewer-card {
+            position: sticky;
+            top: 52px; /* topbar height */
+            z-index: 100;
+        }
         .viewer-wrap {
             width: 100%;
-            height: 480px;
+            height: 360px;
             border-radius: 10px;
             overflow: hidden;
             margin-bottom: 8px;
@@ -199,7 +204,7 @@
         /* ── Responsive ── */
         @media (max-width: 768px) {
             .question-row { grid-template-columns: 1fr; gap: 8px; }
-            .viewer-wrap { height: 300px; }
+            .viewer-wrap { height: 250px; }
             .likert-btn { width: 32px; height: 32px; font-size: 12px; }
         }
     </style>
@@ -472,7 +477,7 @@ function buildHotelPage(idx, hotel, spaceType, imageFile) {
 
     return `
     <div class="page" data-page="${idx}" data-hotel="${hotel.id}" data-space="${spaceType}">
-        <div class="card">
+        <div class="card viewer-card">
             <h2>${hotel.label} — ${spaceLabel}</h2>
             <p>Please look around this hotel ${spaceLabel.toLowerCase()} by dragging the image below. Take your time to observe from every angle, then answer the questions.</p>
             <div class="viewer-wrap" id="viewer_${pageKey}"></div>
