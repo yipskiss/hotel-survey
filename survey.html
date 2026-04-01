@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hotel Space Evaluation Survey</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
     <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
@@ -19,11 +19,13 @@
             --likert-selected: #3498db;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body {
+        html, body {
             font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-text-size-adjust: 100%;
         }
 
         /* ── Top bar ── */
@@ -48,7 +50,7 @@
         }
 
         /* ── Page container ── */
-        .page { display: none; max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; }
+        .page { display: none; max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; overflow-x: hidden; }
         .page.active { display: block; }
 
         /* ── Cards ── */
@@ -119,10 +121,19 @@
         .question-text { font-size: 14px; }
         .likert-scale {
             display: flex; gap: 6px; align-items: center;
+            flex-wrap: nowrap;
+            max-width: 100%;
         }
         .likert-scale .anchor { font-size: 11px; color: var(--muted); min-width: 60px; text-align: center; }
         .likert-scale .anchor:first-child { text-align: right; }
         .likert-scale .anchor:last-child { text-align: left; }
+        .likert-mobile-label {
+            display: none;
+            font-size: 11px;
+            color: var(--muted);
+            text-align: center;
+            margin-bottom: 4px;
+        }
         .likert-btn {
             width: 36px; height: 36px;
             border-radius: 50%;
@@ -216,9 +227,25 @@
 
         /* ── Responsive ── */
         @media (max-width: 768px) {
-            .question-row { grid-template-columns: 1fr; gap: 8px; }
+            .question-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
             .viewer-wrap { height: 220px; }
-            .likert-btn { width: 32px; height: 32px; font-size: 12px; }
+            .likert-scale {
+                justify-content: center;
+                gap: 4px;
+            }
+            .likert-scale .anchor { display: none; }
+            .likert-mobile-label { display: block; }
+            .likert-btn {
+                width: 36px; height: 36px; font-size: 13px;
+            }
+            .page { padding: 16px 12px 80px; }
+            .card { padding: 16px; }
+            .dimension-group { margin-bottom: 20px; padding-bottom: 14px; }
+            .dim-label { font-size: 14px; }
+            .question-text { font-size: 13px; }
         }
     </style>
 </head>
@@ -457,13 +484,16 @@ function buildHotelPage(idx, hotel, spaceType, imageFile) {
             questionsHtml += `
                 <div class="question-row">
                     <div class="question-text">${item.text}</div>
-                    <div class="likert-scale">
-                        <span class="anchor">Strongly<br>Disagree</span>
-                        ${[1,2,3,4,5,6,7].map(v =>
-                            `<div class="likert-btn" data-key="${key}" data-value="${v}"
-                                 onclick="selectLikert(this,'${key}',${v})">${v}</div>`
-                        ).join('')}
-                        <span class="anchor">Strongly<br>Agree</span>
+                    <div>
+                        <div class="likert-mobile-label">1 = Strongly Disagree · · · 7 = Strongly Agree</div>
+                        <div class="likert-scale">
+                            <span class="anchor">Strongly<br>Disagree</span>
+                            ${[1,2,3,4,5,6,7].map(v =>
+                                `<div class="likert-btn" data-key="${key}" data-value="${v}"
+                                     onclick="selectLikert(this,'${key}',${v})">${v}</div>`
+                            ).join('')}
+                            <span class="anchor">Strongly<br>Agree</span>
+                        </div>
                     </div>
                 </div>`;
         });
