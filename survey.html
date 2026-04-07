@@ -27,6 +27,10 @@
             overflow-x: hidden;
             -webkit-text-size-adjust: 100%;
         }
+        body.split-mode {
+            overflow: hidden;
+            height: 100vh;
+        }
 
         /* ── Top bar ── */
         .topbar {
@@ -92,6 +96,40 @@
         }
         .viewer-wrap .pnlm-controls-container { display: none !important; }
         .has-viewer { padding-top: 620px !important; }
+
+        /* ── Split-screen mode (hotel pages) ── */
+        body.split-mode .viewer-section.active {
+            top: 52px;
+            bottom: auto;
+            height: calc(50vh - 26px);
+            padding: 6px 20px;
+            overflow: hidden;
+        }
+        body.split-mode .viewer-section .card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 8px 16px;
+        }
+        body.split-mode .viewer-wrap {
+            height: 100% !important;
+            flex: 1;
+            min-height: 0;
+        }
+        body.split-mode .page.has-viewer {
+            position: fixed;
+            top: calc(50vh + 26px);
+            left: 0; right: 0;
+            bottom: 60px;
+            overflow-y: auto;
+            padding: 16px 20px 20px !important;
+            max-width: 100%;
+            margin: 0;
+        }
+        body.split-mode .page.has-viewer .card {
+            max-width: 900px;
+            margin: 0 auto 16px;
+        }
 
         /* ── Likert ── */
         .dimension-group {
@@ -231,6 +269,13 @@
             .viewer-section h2 { font-size: 14px; }
             .viewer-section p { font-size: 11px; margin-bottom: 6px; }
             .has-viewer { padding-top: 300px !important; }
+            body.split-mode .viewer-section.active {
+                height: calc(40vh - 26px);
+            }
+            body.split-mode .page.has-viewer {
+                top: calc(40vh + 26px);
+                padding: 12px 12px 16px !important;
+            }
             .likert-scale {
                 justify-content: center;
                 gap: 4px;
@@ -286,23 +331,87 @@
 // ============================================================
 
 const CONFIG = {
-    // GitHub Pages base URL (본인 URL로 변경)
-    viewerBaseUrl: './viewer.html',
-
-    // 호텔 목록 (이미지 파일명)
-    // 호텔을 추가하려면 아래 배열에 계속 추가하면 됩니다
-    hotels: [
-        { id: 'hotel_01', label: 'Hotel A', lobby: 'hotel_01_lobby.png', room: 'hotel_01_room.png' },
-        // { id: 'hotel_02', label: 'Hotel B', lobby: 'hotel_02_lobby.png', room: 'hotel_02_room.png' },
-        // { id: 'hotel_03', label: 'Hotel C', lobby: 'hotel_03_lobby.png', room: 'hotel_03_room.png' },
-        // ... 15개까지 추가 가능. 주석 해제하고 파일명만 맞추면 됨
-    ],
-
     // Google Sheets Web App URL (배포 후 입력)
     googleSheetsUrl: '',
 
-    // Prolific 완료 URL (Prolific 사용 시 입력)
-    prolificReturnUrl: '',
+    // Prolific/CloudResearch 완료 URL (사용 시 입력)
+    completionReturnUrl: '',
+
+    // ── 50개 호텔 풀 (5 STR Tiers × 10 Hotels) ──
+    // 이미지 파일: ./images/{tier}_{nn}_lobby.jpg, ./images/{tier}_{nn}_room.jpg
+    allHotels: {
+        luxury: [
+            { id: 'LX01', label: 'Hotel 1', lobby: './images/luxury/luxury_lobby_01_The_Ritz_Carlton_Central_Park.png', room: './images/luxury/luxury_room_01_The_Ritz_Carlton_Central_Park.png' },
+            { id: 'LX02', label: 'Hotel 2', lobby: './images/luxury/luxury_lobby_02_The_St_Regis_New_York.png', room: './images/luxury/luxury_room_02_The_St_Regis_New_York.png' },
+            { id: 'LX03', label: 'Hotel 3', lobby: './images/luxury/luxury_lobby_03_Four_Seasons_Hotel_Downtown_NYC.png', room: './images/luxury/luxury_room_03_Four_Seasons_Hotel_Downtown_NYC.png' },
+            { id: 'LX04', label: 'Hotel 4', lobby: './images/luxury/luxury_lobby_04_JW_Marriott_Essex_House.png', room: './images/luxury/luxury_room_04_JW_Marriott_Essex_House.png' },
+            { id: 'LX05', label: 'Hotel 5', lobby: './images/luxury/luxury_lobby_05_The_Ritz_Carlton_Chicago.png', room: './images/luxury/luxury_room_05_The_Ritz_Carlton_Chicago.png' },
+            { id: 'LX06', label: 'Hotel 6', lobby: './images/luxury/luxury_lobby_06_Four_Seasons_Hotel_Chicago.png', room: './images/luxury/luxury_room_06_Four_Seasons_Hotel_Chicago.png' },
+            { id: 'LX07', label: 'Hotel 7', lobby: './images/luxury/luxury_lobby_07_Waldorf_Astoria_Chicago.png', room: './images/luxury/luxury_room_07_Waldorf_Astoria_Chicago.png' },
+            { id: 'LX08', label: 'Hotel 8', lobby: './images/luxury/luxury_lobby_08_The_Ritz_Carlton_Los_Angeles.png', room: './images/luxury/luxury_room_08_The_Ritz_Carlton_Los_Angeles.png' },
+            { id: 'LX09', label: 'Hotel 9', lobby: './images/luxury/luxury_lobby_09_Four_Seasons_Beverly_Wilshire.png', room: './images/luxury/luxury_room_09_Four_Seasons_Beverly_Wilshire.png' },
+            { id: 'LX10', label: 'Hotel 10', lobby: './images/luxury/luxury_lobby_10_Waldorf_Astoria_Beverly_Hills.png', room: './images/luxury/luxury_room_10_Waldorf_Astoria_Beverly_Hills.png' },
+        ],
+        upper_upscale: [
+            { id: 'UU01', label: 'Hotel 1', lobby: './images/upper_upscale/upper_upscale_lobby_01_New_York_Marriott_Marquis.png', room: './images/upper_upscale/upper_upscale_room_01_New_York_Marriott_Marquis.png' },
+            { id: 'UU02', label: 'Hotel 2', lobby: './images/upper_upscale/upper_upscale_lobby_02_The_Westin_New_York_Times_Square.png', room: './images/upper_upscale/upper_upscale_room_02_The_Westin_New_York_Times_Square.png' },
+            { id: 'UU03', label: 'Hotel 3', lobby: './images/upper_upscale/upper_upscale_lobby_03_Sheraton_New_York_Times_Square.png', room: './images/upper_upscale/upper_upscale_room_03_Sheraton_New_York_Times_Square.png' },
+            { id: 'UU04', label: 'Hotel 4', lobby: './images/upper_upscale/upper_upscale_lobby_04_New_York_Hilton_Midtown.png', room: './images/upper_upscale/upper_upscale_room_04_New_York_Hilton_Midtown.png' },
+            { id: 'UU05', label: 'Hotel 5', lobby: './images/upper_upscale/upper_upscale_lobby_05_Chicago_Marriott_Downtown_Magnificent_Mile.png', room: './images/upper_upscale/upper_upscale_room_05_Chicago_Marriott_Downtown_Magnificent_Mile.png' },
+            { id: 'UU06', label: 'Hotel 6', lobby: './images/upper_upscale/upper_upscale_lobby_06_The_Westin_Michigan_Avenue_Chicago.png', room: './images/upper_upscale/upper_upscale_room_06_The_Westin_Michigan_Avenue_Chicago.png' },
+            { id: 'UU07', label: 'Hotel 7', lobby: './images/upper_upscale/upper_upscale_lobby_07_Sheraton_Grand_Chicago_Riverwalk.png', room: './images/upper_upscale/upper_upscale_room_07_Sheraton_Grand_Chicago_Riverwalk.png' },
+            { id: 'UU08', label: 'Hotel 8', lobby: './images/upper_upscale/upper_upscale_lobby_08_Hilton_Los_Angeles_Airport.png', room: './images/upper_upscale/upper_upscale_room_08_Hilton_Los_Angeles_Airport.png' },
+            { id: 'UU09', label: 'Hotel 9', lobby: './images/upper_upscale/upper_upscale_lobby_09_The_Westin_Bonaventure_Los_Angeles.png', room: './images/upper_upscale/upper_upscale_room_09_The_Westin_Bonaventure_Los_Angeles.png' },
+            { id: 'UU10', label: 'Hotel 10', lobby: './images/upper_upscale/upper_upscale_lobby_10_Sheraton_Grand_Los_Angeles.png', room: './images/upper_upscale/upper_upscale_room_10_Sheraton_Grand_Los_Angeles.png' },
+        ],
+        upscale: [
+            { id: 'UP01', label: 'Hotel 1', lobby: './images/upscale/upscale_lobby_01_Courtyard_Manhattan_Central_Park.png', room: './images/upscale/upscale_room_01_Courtyard_Manhattan_Central_Park.png' },
+            { id: 'UP02', label: 'Hotel 2', lobby: './images/upscale/upscale_lobby_02_Hilton_Garden_Inn_Midtown_East_NYC.png', room: './images/upscale/upscale_room_02_Hilton_Garden_Inn_Midtown_East_NYC.png' },
+            { id: 'UP03', label: 'Hotel 3', lobby: './images/upscale/upscale_lobby_03_Hyatt_Place_Midtown_South_NYC.png', room: './images/upscale/upscale_room_03_Hyatt_Place_Midtown_South_NYC.png' },
+            { id: 'UP04', label: 'Hotel 4', lobby: './images/upscale/upscale_lobby_04_DoubleTree_Times_Square_South_NYC.png', room: './images/upscale/upscale_room_04_DoubleTree_Times_Square_South_NYC.png' },
+            { id: 'UP05', label: 'Hotel 5', lobby: './images/upscale/upscale_lobby_05_Courtyard_Chicago_Downtown_River_North.png', room: './images/upscale/upscale_room_05_Courtyard_Chicago_Downtown_River_North.png' },
+            { id: 'UP06', label: 'Hotel 6', lobby: './images/upscale/upscale_lobby_06_Hilton_Garden_Inn_Chicago_Downtown.png', room: './images/upscale/upscale_room_06_Hilton_Garden_Inn_Chicago_Downtown.png' },
+            { id: 'UP07', label: 'Hotel 7', lobby: './images/upscale/upscale_lobby_07_Hyatt_Place_Chicago_Downtown_The_Loop.png', room: './images/upscale/upscale_room_07_Hyatt_Place_Chicago_Downtown_The_Loop.png' },
+            { id: 'UP08', label: 'Hotel 8', lobby: './images/upscale/upscale_lobby_08_Courtyard_Los_Angeles_LA_LIVE.png', room: './images/upscale/upscale_room_08_Courtyard_Los_Angeles_LA_LIVE.png' },
+            { id: 'UP09', label: 'Hotel 9', lobby: './images/upscale/upscale_lobby_09_Hilton_Garden_Inn_Los_Angeles_Hollywood.png', room: './images/upscale/upscale_room_09_Hilton_Garden_Inn_Los_Angeles_Hollywood.png' },
+            { id: 'UP10', label: 'Hotel 10', lobby: './images/upscale/upscale_lobby_10_DoubleTree_Los_Angeles_Downtown.png', room: './images/upscale/upscale_room_10_DoubleTree_Los_Angeles_Downtown.png' },
+        ],
+        upper_midscale: [
+            { id: 'UM01', label: 'Hotel 1', lobby: './images/upper_midscale/upper_midscale_lobby_01_Hampton_Manhattan_Times_Square.png', room: './images/upper_midscale/upper_midscale_room_01_Hampton_Manhattan_Times_Square.png' },
+            { id: 'UM02', label: 'Hotel 2', lobby: './images/upper_midscale/upper_midscale_lobby_02_Fairfield_Manhattan_Times_Square.png', room: './images/upper_midscale/upper_midscale_room_02_Fairfield_Manhattan_Times_Square.png' },
+            { id: 'UM03', label: 'Hotel 3', lobby: './images/upper_midscale/upper_midscale_lobby_03_Holiday_Inn_Express_Manhattan_Times_Square_South.png', room: './images/upper_midscale/upper_midscale_room_03_Holiday_Inn_Express_Manhattan_Times_Square_South.png' },
+            { id: 'UM04', label: 'Hotel 4', lobby: './images/upper_midscale/upper_midscale_lobby_04_La_Quinta_Inn_Times_Square_South_NYC.png', room: './images/upper_midscale/upper_midscale_room_04_La_Quinta_Inn_Times_Square_South_NYC.png' },
+            { id: 'UM05', label: 'Hotel 5', lobby: './images/upper_midscale/upper_midscale_lobby_05_Hampton_Inn_Chicago_Downtown_N_Loop.png', room: './images/upper_midscale/upper_midscale_room_05_Hampton_Inn_Chicago_Downtown_N_Loop.png' },
+            { id: 'UM06', label: 'Hotel 6', lobby: './images/upper_midscale/upper_midscale_lobby_06_Fairfield_Inn_Chicago_Downtown.png', room: './images/upper_midscale/upper_midscale_room_06_Fairfield_Inn_Chicago_Downtown.png' },
+            { id: 'UM07', label: 'Hotel 7', lobby: './images/upper_midscale/upper_midscale_lobby_07_Holiday_Inn_Express_Chicago_Magnificent_Mile.png', room: './images/upper_midscale/upper_midscale_room_07_Holiday_Inn_Express_Chicago_Magnificent_Mile.png' },
+            { id: 'UM08', label: 'Hotel 8', lobby: './images/upper_midscale/upper_midscale_lobby_08_Hampton_Inn_Los_Angeles_Hollywood.png', room: './images/upper_midscale/upper_midscale_room_08_Hampton_Inn_Los_Angeles_Hollywood.png' },
+            { id: 'UM09', label: 'Hotel 9', lobby: './images/upper_midscale/upper_midscale_lobby_09_Fairfield_Inn_Los_Angeles_LAX.png', room: './images/upper_midscale/upper_midscale_room_09_Fairfield_Inn_Los_Angeles_LAX.png' },
+            { id: 'UM10', label: 'Hotel 10', lobby: './images/upper_midscale/upper_midscale_lobby_10_Holiday_Inn_Express_Los_Angeles_Downtown_West.png', room: './images/upper_midscale/upper_midscale_room_10_Holiday_Inn_Express_Los_Angeles_Downtown_West.png' },
+        ],
+        midscale: [
+            { id: 'MS01', label: 'Hotel 1', lobby: './images/midscale/midscale_lobby_01_Best_Western_Queens_Court.png', room: './images/midscale/midscale_room_01_Best_Western_Queens_Court.png' },
+            { id: 'MS02', label: 'Hotel 2', lobby: './images/midscale/midscale_lobby_02_Wingate_by_Wyndham_Midtown_South.png', room: './images/midscale/midscale_room_02_Wingate_by_Wyndham_Midtown_South.png' },
+            { id: 'MS03', label: 'Hotel 3', lobby: './images/midscale/midscale_lobby_03_Tru_by_Hilton_Brooklyn.png', room: './images/midscale/midscale_room_03_Tru_by_Hilton_Brooklyn.png' },
+            { id: 'MS04', label: 'Hotel 4', lobby: './images/midscale/midscale_lobby_04_Ramada_by_Wyndham_Bronx.png', room: './images/midscale/midscale_room_04_Ramada_by_Wyndham_Bronx.png' },
+            { id: 'MS05', label: 'Hotel 5', lobby: './images/midscale/midscale_lobby_05_Quality_Inn_near_Sunset_Park.png', room: './images/midscale/midscale_room_05_Quality_Inn_near_Sunset_Park.png' },
+            { id: 'MS06', label: 'Hotel 6', lobby: './images/midscale/midscale_lobby_06_Best_Western_Grant_Park_Hotel.png', room: './images/midscale/midscale_room_06_Best_Western_Grant_Park_Hotel.png' },
+            { id: 'MS07', label: 'Hotel 7', lobby: './images/midscale/midscale_lobby_07_Tru_by_Hilton_Naperville_Chicago.png', room: './images/midscale/midscale_room_07_Tru_by_Hilton_Naperville_Chicago.png' },
+            { id: 'MS08', label: 'Hotel 8', lobby: './images/midscale/midscale_lobby_08_Baymont_by_Wyndham_Chicago_Alsip.png', room: './images/midscale/midscale_room_08_Baymont_by_Wyndham_Chicago_Alsip.png' },
+            { id: 'MS09', label: 'Hotel 9', lobby: './images/midscale/midscale_lobby_09_Quality_Inn_Hollywood_Walk_of_Fame.png', room: './images/midscale/midscale_room_09_Quality_Inn_Hollywood_Walk_of_Fame.png' },
+            { id: 'MS10', label: 'Hotel 10', lobby: './images/midscale/midscale_lobby_10_Best_Western_Hollywood_Plaza_Hotel.png', room: './images/midscale/midscale_room_10_Best_Western_Hollywood_Plaza_Hotel.png' },
+        ],
+    },
+
+    // ── 5개 그룹 (Balanced Block Design) ──
+    // 각 그룹은 등급당 2개 호텔 = 10개 호텔
+    // 인덱스: 0-based (0=호텔1, 1=호텔2, ...)
+    groups: {
+        A: [0, 1],   // 각 tier에서 호텔 1, 2
+        B: [2, 3],   // 각 tier에서 호텔 3, 4
+        C: [4, 5],   // 각 tier에서 호텔 5, 6
+        D: [6, 7],   // 각 tier에서 호텔 7, 8
+        E: [8, 9],   // 각 tier에서 호텔 9, 10
+    },
 };
 
 // ============================================================
@@ -386,12 +495,111 @@ let currentPage = 0;
 let totalPages = 0;
 const responses = {};
 let participantId = 'P_' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
+let assignedGroup = '';
+let assignedHotels = [];
+let participantGeneration = '';   // 'Gen Z' or 'Gen X'
+let participantPurpose = '';      // 'Business' or 'Leisure'
+let screenedOut = false;
+
+// ============================================================
+// SCREENING CHECK
+// ============================================================
+
+function checkScreening() {
+    const birthYear = parseInt(document.getElementById('demo_birthyear')?.value);
+    const gender = document.getElementById('demo_gender')?.value;
+    const purpose = document.getElementById('demo_purpose')?.value;
+    const failEl = document.getElementById('screeningFail');
+    const reasonEl = document.getElementById('screeningFailReason');
+
+    if (!failEl) return;
+
+    let fail = false;
+    let reason = '';
+
+    // Check generation: Gen Z (1997-2008, age 18-29) or Gen X (1965-1980, age 46-61)
+    if (birthYear) {
+        const isGenZ = birthYear >= 1997 && birthYear <= 2008;
+        const isGenX = birthYear >= 1965 && birthYear <= 1980;
+        if (!isGenZ && !isGenX) {
+            fail = true;
+            reason = 'This study requires participants from Generation Z (born 1997–2008) or Generation X (born 1965–1980).';
+        } else {
+            participantGeneration = isGenZ ? 'Gen Z' : 'Gen X';
+        }
+    }
+
+    // Store purpose
+    if (purpose) {
+        participantPurpose = purpose;
+        responses['_travelPurpose'] = purpose;
+    }
+
+    // Store generation
+    if (participantGeneration) {
+        responses['_generation'] = participantGeneration;
+    }
+    if (birthYear) {
+        responses['_birthYear'] = birthYear;
+    }
+    if (gender) {
+        responses['_gender'] = gender;
+    }
+
+    screenedOut = fail;
+    failEl.style.display = fail ? 'block' : 'none';
+    if (reasonEl) reasonEl.textContent = reason;
+}
+
+// ============================================================
+// GROUP ASSIGNMENT & RANDOMIZATION
+// ============================================================
+
+function shuffleArray(arr) {
+    const shuffled = [...arr];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+function assignGroupAndHotels() {
+    // 1. 랜덤 그룹 배정 (A~E)
+    const groupKeys = Object.keys(CONFIG.groups);
+    assignedGroup = groupKeys[Math.floor(Math.random() * groupKeys.length)];
+    const indices = CONFIG.groups[assignedGroup];
+
+    // 2. 배정된 그룹의 호텔 수집 (등급당 2개 = 10개)
+    const tiers = Object.keys(CONFIG.allHotels);
+    let hotels = [];
+    tiers.forEach(tier => {
+        indices.forEach(idx => {
+            const hotel = CONFIG.allHotels[tier][idx];
+            hotels.push({ ...hotel, tier: tier });
+        });
+    });
+
+    // 3. 10개 호텔 순서 랜덤화 (순서효과 방지)
+    assignedHotels = shuffleArray(hotels);
+
+    // 4. 메타데이터 기록
+    responses['_participantId'] = participantId;
+    responses['_assignedGroup'] = assignedGroup;
+    responses['_hotelOrder'] = assignedHotels.map(h => h.id).join(',');
+    responses['_timestamp'] = new Date().toISOString();
+
+    console.log(`[Survey] Group: ${assignedGroup}, Hotels: ${assignedHotels.map(h=>h.id).join(', ')}`);
+}
 
 // ============================================================
 // BUILD PAGES
 // ============================================================
 
 function buildAllPages() {
+    // 그룹 배정 & 호텔 랜덤화
+    assignGroupAndHotels();
+
     const container = document.getElementById('pagesContainer');
     let pageIndex = 0;
 
@@ -402,8 +610,10 @@ function buildAllPages() {
     container.innerHTML += buildDemoPage(pageIndex++);
 
     // — Pages: Hotels (transition + lobby + room for each) —
-    CONFIG.hotels.forEach((hotel, hi) => {
-        container.innerHTML += buildTransitionPage(pageIndex++, hotel, hi + 1, CONFIG.hotels.length);
+    // 순서: 랜덤 배정된 10개 호텔
+    // 공간 순서: 로비 → 객실 (고정, 연구 일관성)
+    assignedHotels.forEach((hotel, hi) => {
+        container.innerHTML += buildTransitionPage(pageIndex++, hotel, hi + 1, assignedHotels.length);
         container.innerHTML += buildHotelPage(pageIndex++, hotel, 'lobby', hotel.lobby);
         container.innerHTML += buildHotelPage(pageIndex++, hotel, 'room', hotel.room);
     });
@@ -424,6 +634,16 @@ function buildTransitionPage(idx, hotel, hotelNum, totalHotels) {
                 Hotel ${hotelNum} of ${totalHotels}
             </div>
             <h2 style="font-size:28px; margin-bottom:16px;">${hotel.label}</h2>
+
+            <!-- Scenario Framing -->
+            <div id="scenario_${idx}" style="background:#fef9e7; border:1px solid #f0d060; border-radius:10px; padding:16px 24px; margin:0 auto 20px; max-width:520px;">
+                <p style="font-size:15px; color:#6d5800; margin:0; line-height:1.7;">
+                    <strong>📌 Scenario:</strong> Imagine you are considering this hotel for a 
+                    <strong class="scenario-purpose" style="color:#c0392b;"></strong> trip.
+                    Please evaluate the spaces from that perspective.
+                </p>
+            </div>
+
             <p style="font-size:15px; color:#555; max-width:500px; margin:0 auto 24px;">
                 You will now evaluate this hotel's <strong>lobby</strong> and <strong>room</strong>.<br>
                 For each space, look around the 360° image, then answer the questions.
@@ -443,7 +663,7 @@ function buildConsentPage(idx) {
             <div class="consent-box">
                 <p><strong>Study Title:</strong> Visual Assessment of Hotel Interior Spaces</p>
                 <p><strong>Purpose:</strong> This study examines how people evaluate hotel interior spaces using 360° panoramic images.</p>
-                <p><strong>Procedure:</strong> You will view 360° panoramic images of hotel lobbies and rooms. For each space, you will look around the space by dragging the image, then answer evaluation questions. The entire survey takes approximately 15-20 minutes.</p>
+                <p><strong>Procedure:</strong> You will view 360° panoramic images of hotel lobbies and rooms. For each space, you will look around the space by dragging the image, then answer evaluation questions. You will evaluate 10 hotels total (lobby and room for each). The entire survey takes approximately 60–70 minutes.</p>
                 <p><strong>Risks:</strong> There are no known risks associated with this study.</p>
                 <p><strong>Confidentiality:</strong> Your responses will be anonymous and used only for academic research purposes.</p>
                 <p><strong>Voluntary Participation:</strong> Your participation is voluntary. You may withdraw at any time without penalty.</p>
@@ -462,24 +682,42 @@ function buildDemoPage(idx) {
     <div class="page" data-page="${idx}">
         <div class="card">
             <h2>About You</h2>
-            <p>Please answer the following questions about yourself.</p>
+            <p>Please answer the following questions. Your answers determine your eligibility for this study.</p>
 
             <div class="form-group">
-                <label>Age</label>
-                <select id="demo_age" onchange="updateNav()">
+                <label>What is your birth year?</label>
+                <select id="demo_birthyear" onchange="checkScreening(); updateNav()">
                     <option value="">Select...</option>
-                    <option>18-24</option><option>25-34</option><option>35-44</option>
-                    <option>45-54</option><option>55-64</option><option>65+</option>
+                    ${Array.from({length: 50}, (_, i) => 2008 - i).map(y =>
+                        `<option value="${y}">${y}</option>`
+                    ).join('')}
                 </select>
+                <div class="dim-hint" style="font-size:11px; color:var(--muted); margin-top:4px;">
+                    This study is open to participants born 1965–1980 (Gen X) or 1997–2008 (Gen Z).
+                </div>
             </div>
 
             <div class="form-group">
                 <label>Gender</label>
-                <select id="demo_gender" onchange="updateNav()">
+                <select id="demo_gender" onchange="checkScreening(); updateNav()">
                     <option value="">Select...</option>
-                    <option>Male</option><option>Female</option>
-                    <option>Non-binary</option><option>Prefer not to say</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Non-binary">Non-binary</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
                 </select>
+            </div>
+
+            <div class="form-group">
+                <label>When you stay at a hotel, what is your <strong>primary</strong> travel purpose?</label>
+                <select id="demo_purpose" onchange="checkScreening(); updateNav()">
+                    <option value="">Select...</option>
+                    <option value="Business">Business (work trips, conferences, meetings)</option>
+                    <option value="Leisure">Leisure (vacation, personal travel, tourism)</option>
+                </select>
+                <div class="dim-hint" style="font-size:11px; color:var(--muted); margin-top:4px;">
+                    Please select the purpose that best describes <strong>most</strong> of your hotel stays.
+                </div>
             </div>
 
             <div class="form-group">
@@ -491,13 +729,11 @@ function buildDemoPage(idx) {
                 </select>
             </div>
 
-            <div class="form-group">
-                <label>Primary purpose of hotel stays</label>
-                <select id="demo_purpose" onchange="updateNav()">
-                    <option value="">Select...</option>
-                    <option>Leisure/Vacation</option><option>Business</option>
-                    <option>Both equally</option><option>Other</option>
-                </select>
+            <!-- Screening fail message (hidden by default) -->
+            <div id="screeningFail" style="display:none; background:#fdf0f0; border:1px solid #e74c3c; border-radius:8px; padding:16px; margin-top:16px;">
+                <p style="color:#c0392b; font-weight:500; margin-bottom:8px;">Thank you for your interest.</p>
+                <p style="color:#555; font-size:14px;">Unfortunately, you do not meet the eligibility criteria for this study. Please return this submission on the platform.</p>
+                <p id="screeningFailReason" style="color:#888; font-size:12px; margin-top:8px;"></p>
             </div>
         </div>
     </div>`;
@@ -533,19 +769,34 @@ function buildHotelPage(idx, hotel, spaceType, imageFile) {
         questionsHtml += `</div>`;
     });
 
-    // WTP (room only)
+    // WTP (room only — Payment Card Method)
     let wtpHtml = '';
     if (spaceType === 'room') {
         const wtpKey = `${pageKey}_WTP`;
+        const wtpOptions = [
+            '$50 or less',
+            '$51 – $100',
+            '$101 – $150',
+            '$151 – $200',
+            '$201 – $250',
+            '$251 – $300',
+            '$301 – $400',
+            '$401 – $500',
+            '$501 – $700',
+            '$701 – $1,000',
+            'More than $1,000',
+        ];
         wtpHtml = `
         <div class="dimension-group">
             <div class="dim-label">Willingness to Pay</div>
             <div class="question-row">
-                <div class="question-text">Please indicate the maximum price you would be willing to pay <strong>per night</strong> for this room.</div>
-                <div class="wtp-input">
-                    <span>$</span>
-                    <input type="number" id="${wtpKey}" min="0" max="9999"
-                           placeholder="0" onchange="responses['${wtpKey}']=this.value; updateNav()">
+                <div class="question-text">How much would you be willing to pay <strong>per night</strong> to stay in this room?</div>
+                <div>
+                    <select id="${wtpKey}" style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-size:14px; background:#fff;"
+                            onchange="responses['${wtpKey}']=this.value; updateNav()">
+                        <option value="">— Select a price range —</option>
+                        ${wtpOptions.map((opt, i) => `<option value="${i+1}">${opt}</option>`).join('')}
+                    </select>
                 </div>
             </div>
         </div>`;
@@ -616,6 +867,7 @@ function initViewer(pageEl) {
 
     // Show fixed viewer
     fixedViewer.classList.add('active');
+    document.body.classList.add('split-mode');
     viewerTitle.textContent = label;
 
     // Badge: Lobby = blue, Room = green
@@ -639,7 +891,7 @@ function initViewer(pageEl) {
 
     activeViewer = pannellum.viewer('viewerPano', {
         type: 'equirectangular',
-        panorama: `./images/${imageFile}`,
+        panorama: imageFile,
         autoLoad: true,
         hfov: 100, minHfov: 100, maxHfov: 100,
         minPitch: -60, maxPitch: 60,
@@ -655,6 +907,7 @@ function initViewer(pageEl) {
 
 function hideViewer() {
     document.getElementById('fixedViewer').classList.remove('active');
+    document.body.classList.remove('split-mode');
 }
 
 // ============================================================
@@ -662,11 +915,20 @@ function hideViewer() {
 // ============================================================
 
 function showPage(idx) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => {
+        p.classList.remove('active');
+        p.scrollTop = 0;
+    });
     const page = document.querySelector(`.page[data-page="${idx}"]`);
     if (page) {
         page.classList.add('active');
         window.scrollTo(0, 0);
+        page.scrollTop = 0;
+
+        // Inject travel purpose into scenario framing
+        page.querySelectorAll('.scenario-purpose').forEach(el => {
+            el.textContent = participantPurpose ? participantPurpose.toLowerCase() : '___';
+        });
 
         // Show/hide fixed viewer based on page type
         if (page.classList.contains('has-viewer')) {
@@ -725,16 +987,22 @@ function isPageValid(idx) {
     const consent = page.querySelector('#consentCheck');
     if (consent) return consent.checked;
 
-    // Demographics page
+    // Demographics page — all fields filled AND not screened out
     const selects = page.querySelectorAll('select');
     if (selects.length > 0 && !page.dataset.hotel) {
-        return Array.from(selects).every(s => s.value !== '');
+        const allFilled = Array.from(selects).every(s => s.value !== '');
+        return allFilled && !screenedOut;
     }
 
-    // Hotel pages — all likert answered
+    // Hotel pages — all likert answered + WTP (if room)
     const likerts = page.querySelectorAll('.likert-scale');
     if (likerts.length > 0) {
-        return Array.from(likerts).every(ls => ls.querySelector('.selected'));
+        const allLikert = Array.from(likerts).every(ls => ls.querySelector('.selected'));
+        const wtpSelect = page.querySelector('select[id*="_WTP"]');
+        if (wtpSelect) {
+            return allLikert && wtpSelect.value !== '';
+        }
+        return allLikert;
     }
 
     return true;
@@ -753,14 +1021,17 @@ function updateProgress() {
 function collectAllData() {
     // Demographics
     const demo = {
-        age: document.getElementById('demo_age')?.value || '',
+        birthYear: document.getElementById('demo_birthyear')?.value || '',
+        generation: participantGeneration,
         gender: document.getElementById('demo_gender')?.value || '',
         frequency: document.getElementById('demo_frequency')?.value || '',
-        purpose: document.getElementById('demo_purpose')?.value || '',
+        travelPurpose: participantPurpose,
     };
 
     return {
         participantId,
+        assignedGroup,
+        hotelOrder: assignedHotels.map(h => h.id).join(','),
         timestamp: new Date().toISOString(),
         demographics: demo,
         responses: { ...responses },
