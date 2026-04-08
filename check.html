@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hotel Image Check</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f4f6f8;
+    color: #222;
+    padding: 24px;
+    line-height: 1.5;
+  }
+  h1 { color: #2c3e50; margin-bottom: 8px; }
+  .subtitle { color: #6b7280; margin-bottom: 20px; font-size: 14px; }
+
+  /* 카운터 */
+  .counters {
+    display: flex; gap: 12px; margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .counter {
+    background: #fff; border-radius: 10px;
+    padding: 16px 24px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    min-width: 120px;
+  }
+  .counter .label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+  .counter .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .counter.total .value { color: #2c3e50; }
+  .counter.ok .value { color: #16a34a; }
+  .counter.missing .value { color: #dc2626; }
+  .counter.pending .value { color: #f59e0b; }
+
+  /* 컨트롤 */
+  .controls {
+    margin-bottom: 20px;
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  button {
+    background: #3498db; color: #fff; border: none;
+    padding: 10px 20px; font-size: 14px; font-weight: 600;
+    border-radius: 8px; cursor: pointer;
+  }
+  button:hover { background: #2980b9; }
+  button.copy { background: #16a34a; }
+  button.copy:hover { background: #15803d; }
+  button.recheck { background: #6b7280; }
+
+  /* 등급 테이블 */
+  .tier-section {
+    background: #fff; border-radius: 10px;
+    padding: 20px; margin-bottom: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .tier-section h2 {
+    font-size: 16px; color: #2c3e50;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13px;
+  }
+  th, td {
+    text-align: left; padding: 8px 10px;
+    border-bottom: 1px solid #f1f1f1;
+  }
+  th { background: #fafafa; font-weight: 600; color: #6b7280; }
+  td.status { text-align: center; width: 80px; font-weight: 600; }
+  td.status.ok { color: #16a34a; }
+  td.status.missing { color: #dc2626; }
+  td.status.pending { color: #f59e0b; }
+  td.filename { font-family: monospace; font-size: 11px; color: #555; word-break: break-all; }
+
+  /* 누락 목록 */
+  #missingList {
+    background: #fff; border-radius: 10px;
+    padding: 20px; margin-bottom: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    display: none;
+  }
+  #missingList.show { display: block; }
+  #missingList h2 { color: #dc2626; margin-bottom: 12px; }
+  #missingTextarea {
+    width: 100%; height: 200px;
+    font-family: monospace; font-size: 12px;
+    padding: 12px; border: 1px solid #e0e0e0;
+    border-radius: 6px; resize: vertical;
+  }
+</style>
+</head>
+<body>
+
+<h1>🔍 Hotel Image Verification</h1>
+<p class="subtitle">Checks all 100 hotel images (50 hotels × 2 spaces) and reports any missing files.</p>
+
+<div class="counters">
+  <div class="counter total"><div class="label">Total</div><div class="value" id="cTotal">0</div></div>
+  <div class="counter ok"><div class="label">OK</div><div class="value" id="cOk">0</div></div>
+  <div class="counter missing"><div class="label">Missing</div><div class="value" id="cMissing">0</div></div>
+  <div class="counter pending"><div class="label">Pending</div><div class="value" id="cPending">0</div></div>
+</div>
+
+<div class="controls">
+  <button class="recheck" onclick="runCheck()">🔄 Re-check all</button>
+  <button class="copy" onclick="copyMissing()">📋 Copy missing list</button>
+</div>
+
+<div id="missingList">
+  <h2>Missing Files</h2>
+  <p style="font-size:13px; color:#6b7280; margin-bottom:8px;">These files were not found. Check filenames for typos or upload the missing images.</p>
+  <textarea id="missingTextarea" readonly></textarea>
+</div>
+
+<div id="tableContainer"></div>
+
+<script>
+// ============================================================
+// 50 호텔 정의 (survey.html과 동일)
+// ============================================================
+
+const HOTELS = {
+  luxury: [
+    'Four_Seasons_Hotel_Chicago',
+    'Four_Seasons_Hotel_Downtown',
+    'Four_Seasons_Hotel_Los_Angeles_at_Beverly_Wilshire',
+    'The_Ritrz-Carlton_Chicago',                              // ← Ritrz 오타 그대로
+    'The_Ritz-Carlton_Central_Park',
+    'The_Ritz-Carlton_Los_Angeles',
+    'The_St_Regis_New_York',
+    'W_New_York_-_Times_Square',
+    'Waldorf_Astoria_Beverly_Hills',
+    'Waldorf_Astoria_Chicago',
+  ],
+  upper_upscale: [
+    'Chicago_Marriott_Downtown_Magnificent_Mile',
+    'Hilton_Los_Angeles_Airport',
+    'Hyatt_Regency_Times_Square',
+    'New_York_Hilton_Midtown',
+    'New_York_Marriott_Marquis',
+    'Sheraton_Grand_Chicago_Riverwalk',
+    'Sheraton_Grand_Los_Angeles',
+    'Sheraton_New_York_Times_Square',
+    'The_Westin_Bonaventure_Hotel_Los_Angeles',
+    'The_Westin_Michigan_Avenue_Chicago',
+  ],
+  upscale: [
+    'Aloft_Manhattan_Downtown',
+    'Courtyard_Chicago_DowntownRiver_North',
+    'Courtyard_Los_Angeles_LA_LIVE',
+    'Courtyard_ManhattanCentral_Park',
+    'DoubleTree_Times_Square_South',
+    'DoubleTree_by_Hilton_Los_Angeles_Downtown',
+    'Hilton_Garden_Inn_Chicago_DowntownMagnificent_Mile',
+    'Hilton_Garden_Inn_Los_AngelesHollywood',
+    'Hyatt_Place_ChicagoDowntown_-_The_Loop',
+    'Residence_Inn_by_Marriott_New_York_ManhattanTimes_Square',
+  ],
+  upper_midscale: [
+    'Fairfield_Inn_Chicago_DowntownMagnificent_Mile',
+    'Fairfield_Inn_Los_Angeles_LAXEl_Segundo',
+    'Fairfield_by_Marriott_TS',
+    'Hampton_Inn_Chicago_DowntownN_Loop',
+    'Hampton_Inn_Suites_Los_AngelesHollywood',
+    'Hampton_by_Hilton_TS_Central',
+    'Holiday_Inn_Express_Chicago_Magnificent_Mile',
+    'Holiday_Inn_Express_Los_Angeles_Downtown_West',
+    'Holiday_Inn_Express_TS_South',
+    'MOXY_Times_Square',
+  ],
+  midscale: [
+    'Baymont_by_Wyndham_ChicagoAlsip',
+    'Best_Western_Grant_Park_Hotel',
+    'Best_Western_Hollywood_Plaza_Hotel',
+    'Best_Western_Queens_Court',
+    'Quality_Inn_Near_Hollywood_Walk_of_Fame',
+    'Quality_Inn_near_Sunset_Park',
+    'Ramada_by_Wyndham_Bronx',
+    'Tru_by_Hilton_Brooklyn',
+    'Tru_by_Hilton_Naperville_Chicago',
+    'Wingate_by_Wyndham_Midtown_South',
+  ],
+};
+
+const IMAGE_BASE = './images';
+const SPACES = ['lobby', 'room'];
+
+// ============================================================
+// 모든 파일 경로 생성
+// ============================================================
+
+function buildAllFiles() {
+  const files = [];
+  for (const tier of Object.keys(HOTELS)) {
+    HOTELS[tier].forEach((name, i) => {
+      const idx2 = String(i + 1).padStart(2, '0');
+      for (const space of SPACES) {
+        files.push({
+          tier: tier,
+          idx: i + 1,
+          name: name,
+          space: space,
+          path: `${IMAGE_BASE}/${tier}/${tier}_${space}_${idx2}_${name}.png`,
+          status: 'pending',
+        });
+      }
+    });
+  }
+  return files;
+}
+
+let allFiles = [];
+const missingList = [];
+
+// ============================================================
+// 비동기 이미지 로드 검사
+// ============================================================
+
+function checkImage(file) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => { file.status = 'ok'; resolve(file); };
+    img.onerror = () => { file.status = 'missing'; resolve(file); };
+    img.src = file.path;
+  });
+}
+
+async function runCheck() {
+  allFiles = buildAllFiles();
+  missingList.length = 0;
+  renderTable();
+  updateCounters();
+
+  // 동시 로드 (브라우저가 알아서 큐잉)
+  const promises = allFiles.map(f => checkImage(f).then(updated => {
+    if (updated.status === 'missing') missingList.push(updated.path);
+    updateRow(updated);
+    updateCounters();
+  }));
+
+  await Promise.all(promises);
+  renderMissingList();
+}
+
+// ============================================================
+// 렌더링
+// ============================================================
+
+function renderTable() {
+  const container = document.getElementById('tableContainer');
+  container.innerHTML = '';
+
+  for (const tier of Object.keys(HOTELS)) {
+    const section = document.createElement('div');
+    section.className = 'tier-section';
+    section.innerHTML = `<h2>${tier.replace(/_/g, ' ')}</h2>`;
+
+    const table = document.createElement('table');
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Hotel</th>
+          <th>Lobby</th>
+          <th>Room</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+    const tbody = table.querySelector('tbody');
+
+    HOTELS[tier].forEach((name, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td class="filename">${name}</td>
+        <td class="status pending" data-tier="${tier}" data-idx="${i+1}" data-space="lobby">⏳</td>
+        <td class="status pending" data-tier="${tier}" data-idx="${i+1}" data-space="room">⏳</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    section.appendChild(table);
+    container.appendChild(section);
+  }
+}
+
+function updateRow(file) {
+  const cell = document.querySelector(
+    `td[data-tier="${file.tier}"][data-idx="${file.idx}"][data-space="${file.space}"]`
+  );
+  if (!cell) return;
+  cell.classList.remove('pending');
+  if (file.status === 'ok') {
+    cell.classList.add('ok');
+    cell.textContent = '✓ OK';
+  } else {
+    cell.classList.add('missing');
+    cell.textContent = '✗ Missing';
+    cell.title = file.path;
+  }
+}
+
+function updateCounters() {
+  const total = allFiles.length;
+  const ok = allFiles.filter(f => f.status === 'ok').length;
+  const missing = allFiles.filter(f => f.status === 'missing').length;
+  const pending = allFiles.filter(f => f.status === 'pending').length;
+  document.getElementById('cTotal').textContent = total;
+  document.getElementById('cOk').textContent = ok;
+  document.getElementById('cMissing').textContent = missing;
+  document.getElementById('cPending').textContent = pending;
+}
+
+function renderMissingList() {
+  const box = document.getElementById('missingList');
+  const ta  = document.getElementById('missingTextarea');
+  if (missingList.length === 0) {
+    box.classList.remove('show');
+    return;
+  }
+  box.classList.add('show');
+  ta.value = missingList.sort().join('\n');
+}
+
+function copyMissing() {
+  const ta = document.getElementById('missingTextarea');
+  if (!ta.value) {
+    alert('No missing files to copy.');
+    return;
+  }
+  ta.select();
+  document.execCommand('copy');
+  alert(`Copied ${missingList.length} missing file paths to clipboard.`);
+}
+
+// ============================================================
+// 시작
+// ============================================================
+
+runCheck();
+</script>
+</body>
+</html>

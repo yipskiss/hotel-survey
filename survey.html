@@ -27,10 +27,7 @@
             overflow-x: hidden;
             -webkit-text-size-adjust: 100%;
         }
-        body.split-mode {
-            overflow: hidden;
-            height: 100vh;
-        }
+        body.split-mode { overflow: hidden; height: 100vh; }
 
         /* ── Top bar ── */
         .topbar {
@@ -49,167 +46,153 @@
             border-radius: 2px; width: 200px;
         }
         .progress-bar-fill {
-            height: 100%; background: #2ecc71;
-            border-radius: 2px; transition: width 0.4s;
+            height: 100%; background: var(--accent);
+            border-radius: 2px; width: 0%;
+            transition: width 0.3s ease;
         }
 
-        /* ── Page container ── */
-        .page { display: none; max-width: 900px; margin: 0 auto; padding: 32px 20px 80px; overflow-x: hidden; }
-        .page.active { display: block; }
-
-        /* ── Cards ── */
-        .card {
-            background: var(--card);
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-            padding: 28px;
-            margin-bottom: 24px;
-        }
-        .card h2 { font-size: 20px; margin-bottom: 16px; color: var(--primary); }
-        .card p { font-size: 14px; color: #555; margin-bottom: 16px; }
-
-        /* ── 360° Viewer ── */
-        .viewer-section {
-            position: fixed;
-            top: 52px;
-            left: 0; right: 0;
-            z-index: 100;
-            background: var(--bg);
-            padding: 8px 20px;
+        /* ── Pages ── */
+        .page {
             display: none;
+            padding: 24px;
+            padding-bottom: 100px;
+            min-height: calc(100vh - 52px);
         }
-        .viewer-section.active { display: block; }
-        .viewer-section .card {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 12px 16px;
-            margin-bottom: 0;
-        }
-        .viewer-section h2 { font-size: 16px; margin-bottom: 6px; }
-        .viewer-section p { font-size: 12px; margin-bottom: 8px; }
-        .viewer-wrap {
-            width: 100%;
-            height: 506px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        }
-        .viewer-wrap .pnlm-controls-container { display: none !important; }
-        .has-viewer { padding-top: 620px !important; }
+        .page.active { display: block; }
+        .page.has-viewer { padding-top: 16px; }
 
-        /* ── Split-screen mode (hotel pages) ── */
-        body.split-mode .viewer-section.active {
-            top: 52px;
-            bottom: auto;
-            height: calc(50vh - 26px);
-            padding: 6px 20px;
-            overflow: hidden;
-        }
-        body.split-mode .viewer-section .card {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 8px 16px;
-        }
-        body.split-mode .viewer-wrap {
-            height: 100% !important;
-            flex: 1;
-            min-height: 0;
-        }
         body.split-mode .page.has-viewer {
             position: fixed;
             top: calc(50vh + 26px);
-            left: 0; right: 0;
-            bottom: 60px;
+            left: 0; right: 0; bottom: 70px;
             overflow-y: auto;
-            padding: 16px 20px 20px !important;
-            max-width: 100%;
-            margin: 0;
+            -webkit-overflow-scrolling: touch;
+            padding: 16px 24px;
         }
-        body.split-mode .page.has-viewer .card {
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
             max-width: 900px;
             margin: 0 auto 16px;
         }
+        .card h2 { font-size: 20px; color: var(--primary); margin-bottom: 14px; }
+        .card p { margin-bottom: 12px; }
 
-        /* ── Likert ── */
-        .dimension-group {
-            margin-bottom: 28px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
-        }
-        .dimension-group:last-child { border-bottom: none; }
-        .dim-label {
-            font-size: 15px; font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 12px;
-        }
-        .question-row {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            align-items: center;
-            gap: 16px;
-            padding: 10px 0;
-        }
-        .question-text { font-size: 14px; }
-        .likert-scale {
-            display: flex; gap: 6px; align-items: center;
-            flex-wrap: nowrap;
-            max-width: 100%;
-        }
-        .likert-scale .anchor { font-size: 11px; color: var(--muted); min-width: 60px; text-align: center; }
-        .likert-scale .anchor:first-child { text-align: right; }
-        .likert-scale .anchor:last-child { text-align: left; }
-        .likert-mobile-label {
+        /* ── Fixed viewer (only on hotel pages) ── */
+        .viewer-section {
             display: none;
-            font-size: 11px;
-            color: var(--muted);
-            text-align: center;
-            margin-bottom: 4px;
+            position: fixed;
+            top: 52px; left: 0; right: 0;
+            background: #1a1a1a;
+            z-index: 150;
+            padding: 8px 16px;
         }
-        .likert-btn {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            border: 2px solid var(--border);
-            background: #fff;
-            cursor: pointer;
-            transition: all 0.15s;
-            font-size: 13px;
-            color: var(--muted);
-            display: flex; align-items: center; justify-content: center;
+        body.split-mode .viewer-section.active {
+            display: block;
+            height: calc(50vh - 26px);
         }
-        .likert-btn:hover { border-color: var(--accent); background: var(--likert-hover); }
-        .likert-btn.selected {
-            border-color: var(--likert-selected);
-            background: var(--likert-selected);
-            color: #fff;
+        .viewer-section .card {
+            margin: 0 auto;
+            padding: 10px 16px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #222;
         }
+        .viewer-wrap {
+            flex: 1; min-height: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+        }
+        .viewer-wrap > div { width: 100%; height: 100%; }
 
-        /* ── Form inputs ── */
-        .form-group { margin-bottom: 20px; }
+        /* ── Form ── */
+        .form-group { margin-bottom: 18px; }
         .form-group label {
-            display: block; font-size: 14px; font-weight: 600;
+            display: block; font-weight: 600;
             margin-bottom: 6px; color: var(--primary);
+            font-size: 14px;
         }
         .form-group select, .form-group input {
-            width: 100%; padding: 10px 14px;
+            width: 100%; max-width: 420px;
+            padding: 10px 14px;
             border: 1px solid var(--border);
-            border-radius: 8px; font-size: 14px;
+            border-radius: 8px;
+            font-size: 14px;
             background: #fff;
+            transition: border-color 0.2s;
         }
         .form-group select:focus, .form-group input:focus {
             outline: none; border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(52,152,219,0.15);
         }
 
-        /* ── WTP ── */
-        .wtp-input {
-            display: flex; align-items: center; gap: 8px;
+        /* ── SOR Dimensions ── */
+        .dimension-group {
+            margin-bottom: 26px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #f0f0f0;
         }
-        .wtp-input span { font-size: 20px; font-weight: 600; color: var(--primary); }
-        .wtp-input input {
-            width: 160px; padding: 10px 14px;
-            border: 1px solid var(--border);
-            border-radius: 8px; font-size: 18px; text-align: center;
+        .dimension-group:last-child { border-bottom: none; }
+        .dim-label {
+            font-size: 15px; font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .question-row {
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            gap: 16px; align-items: center;
+            padding: 10px 0;
+        }
+        .question-text { font-size: 14px; color: var(--text); }
+        .likert-mobile-label { display: none; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+
+        .likert-scale {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .anchor {
+            font-size: 10px; color: var(--muted);
+            text-align: center; line-height: 1.2;
+            min-width: 50px;
+        }
+        .likert-btn {
+            width: 38px; height: 38px;
+            border: 1.5px solid var(--border);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 600;
+            cursor: pointer;
+            color: var(--text);
+            background: #fff;
+            transition: all 0.15s;
+            user-select: none;
+        }
+        .likert-btn:hover {
+            background: var(--likert-hover);
+            border-color: var(--accent);
+        }
+        .likert-btn.selected {
+            background: var(--likert-selected);
+            color: #fff;
+            border-color: var(--likert-selected);
+        }
+
+        /* ── Attention check ── */
+        .attention-check .question-text {
+            background: #fff8e1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border-left: 3px solid #f39c12;
         }
 
         /* ── Navigation ── */
@@ -254,37 +237,18 @@
             color: #27ae60;
         }
 
-        /* ── Validation warning ── */
-        .warning { color: #e74c3c; font-size: 13px; margin-top: 4px; display: none; }
-
         /* ── Responsive ── */
         @media (max-width: 768px) {
-            .question-row {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-            .viewer-wrap { height: 200px; }
-            .viewer-section { padding: 6px 12px; }
-            .viewer-section .card { padding: 8px 12px; }
-            .viewer-section h2 { font-size: 14px; }
-            .viewer-section p { font-size: 11px; margin-bottom: 6px; }
-            .has-viewer { padding-top: 300px !important; }
-            body.split-mode .viewer-section.active {
-                height: calc(40vh - 26px);
-            }
+            .question-row { grid-template-columns: 1fr; gap: 8px; }
+            body.split-mode .viewer-section.active { height: calc(40vh - 26px); }
             body.split-mode .page.has-viewer {
                 top: calc(40vh + 26px);
                 padding: 12px 12px 16px !important;
             }
-            .likert-scale {
-                justify-content: center;
-                gap: 4px;
-            }
+            .likert-scale { justify-content: center; gap: 4px; }
             .likert-scale .anchor { display: none; }
             .likert-mobile-label { display: block; }
-            .likert-btn {
-                width: 36px; height: 36px; font-size: 13px;
-            }
+            .likert-btn { width: 36px; height: 36px; font-size: 13px; }
             .page { padding: 16px 12px 80px; }
             .card { padding: 16px; }
             .dimension-group { margin-bottom: 20px; padding-bottom: 14px; }
@@ -304,14 +268,14 @@
     </div>
 </div>
 
-<!-- ═══ FIXED 360° VIEWER (shown on hotel pages) ═══ -->
+<!-- ═══ FIXED 360° VIEWER (호텔 페이지에서만 표시) ═══ -->
 <div class="viewer-section" id="fixedViewer">
     <div class="card">
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
-            <h2 id="viewerTitle" style="margin:0; font-size:16px;">Hotel — Space</h2>
+            <h2 id="viewerTitle" style="margin:0; font-size:16px; color:#fff;">Hotel — Space</h2>
             <span id="viewerBadge" style="display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; color:#fff;">Lobby</span>
         </div>
-        <p style="font-size:12px; color:var(--muted); margin-bottom:8px;">Drag the image to look around, then scroll down to answer.</p>
+        <p style="font-size:12px; color:#bbb; margin-bottom:8px;">🖱 Drag the image to look around, then scroll down to answer.</p>
         <div class="viewer-wrap" id="viewerPano"></div>
     </div>
 </div>
@@ -331,91 +295,94 @@
 // ============================================================
 
 const CONFIG = {
-    // Google Sheets Web App URL (배포 후 입력)
+    // ⚠️ 여기에 Google Sheets Apps Script Web App URL을 넣으세요
     googleSheetsUrl: '',
 
-    // Prolific/CloudResearch 완료 URL (사용 시 입력)
-    completionReturnUrl: '',
+    // Prolific 완료 return URL (cc 파라미터는 자동 추가됨)
+    prolificReturnUrl: 'https://app.prolific.com/submissions/complete',
 
-    // ── 50개 호텔 풀 (5 STR Tiers × 10 Hotels) ──
-    // 이미지 파일: ./images/{tier}_{nn}_lobby.jpg, ./images/{tier}_{nn}_room.jpg
+    // 이미지 베이스 경로 (GitHub Pages 기준 상대 경로)
+    imageBase: './images',
+
+    // ── 50개 호텔 (5 STR Tiers × 10 Hotels) ──
+    // 파일명 규칙: {tier}/{tier}_{space}_{NN}_{HotelName}.png
+    // ⚠️ 호텔 라벨은 blind ("Hotel 1") — brand bias 방지
+    // name 필드는 파일명용 (오타/특수문자 그대로 보존)
     allHotels: {
         luxury: [
-            { id: 'LX01', label: 'Hotel 1', lobby: './images/luxury/luxury_lobby_01_The_Ritz_Carlton_Central_Park.png', room: './images/luxury/luxury_room_01_The_Ritz_Carlton_Central_Park.png' },
-            { id: 'LX02', label: 'Hotel 2', lobby: './images/luxury/luxury_lobby_02_The_St_Regis_New_York.png', room: './images/luxury/luxury_room_02_The_St_Regis_New_York.png' },
-            { id: 'LX03', label: 'Hotel 3', lobby: './images/luxury/luxury_lobby_03_Four_Seasons_Hotel_Downtown_NYC.png', room: './images/luxury/luxury_room_03_Four_Seasons_Hotel_Downtown_NYC.png' },
-            { id: 'LX04', label: 'Hotel 4', lobby: './images/luxury/luxury_lobby_04_JW_Marriott_Essex_House.png', room: './images/luxury/luxury_room_04_JW_Marriott_Essex_House.png' },
-            { id: 'LX05', label: 'Hotel 5', lobby: './images/luxury/luxury_lobby_05_The_Ritz_Carlton_Chicago.png', room: './images/luxury/luxury_room_05_The_Ritz_Carlton_Chicago.png' },
-            { id: 'LX06', label: 'Hotel 6', lobby: './images/luxury/luxury_lobby_06_Four_Seasons_Hotel_Chicago.png', room: './images/luxury/luxury_room_06_Four_Seasons_Hotel_Chicago.png' },
-            { id: 'LX07', label: 'Hotel 7', lobby: './images/luxury/luxury_lobby_07_Waldorf_Astoria_Chicago.png', room: './images/luxury/luxury_room_07_Waldorf_Astoria_Chicago.png' },
-            { id: 'LX08', label: 'Hotel 8', lobby: './images/luxury/luxury_lobby_08_The_Ritz_Carlton_Los_Angeles.png', room: './images/luxury/luxury_room_08_The_Ritz_Carlton_Los_Angeles.png' },
-            { id: 'LX09', label: 'Hotel 9', lobby: './images/luxury/luxury_lobby_09_Four_Seasons_Beverly_Wilshire.png', room: './images/luxury/luxury_room_09_Four_Seasons_Beverly_Wilshire.png' },
-            { id: 'LX10', label: 'Hotel 10', lobby: './images/luxury/luxury_lobby_10_Waldorf_Astoria_Beverly_Hills.png', room: './images/luxury/luxury_room_10_Waldorf_Astoria_Beverly_Hills.png' },
+            { name: 'Four_Seasons_Hotel_Chicago' },
+            { name: 'Four_Seasons_Hotel_Downtown' },
+            { name: 'Four_Seasons_Hotel_Los_Angeles_at_Beverly_Wilshire' },
+            { name: 'The_Ritrz-Carlton_Chicago' },                       // ← Ritrz 오타 그대로
+            { name: 'The_Ritz-Carlton_Central_Park' },
+            { name: 'The_Ritz-Carlton_Los_Angeles' },
+            { name: 'The_St_Regis_New_York' },
+            { name: 'W_New_York_-_Times_Square' },
+            { name: 'Waldorf_Astoria_Beverly_Hills' },
+            { name: 'Waldorf_Astoria_Chicago' },
         ],
         upper_upscale: [
-            { id: 'UU01', label: 'Hotel 1', lobby: './images/upper_upscale/upper_upscale_lobby_01_New_York_Marriott_Marquis.png', room: './images/upper_upscale/upper_upscale_room_01_New_York_Marriott_Marquis.png' },
-            { id: 'UU02', label: 'Hotel 2', lobby: './images/upper_upscale/upper_upscale_lobby_02_The_Westin_New_York_Times_Square.png', room: './images/upper_upscale/upper_upscale_room_02_The_Westin_New_York_Times_Square.png' },
-            { id: 'UU03', label: 'Hotel 3', lobby: './images/upper_upscale/upper_upscale_lobby_03_Sheraton_New_York_Times_Square.png', room: './images/upper_upscale/upper_upscale_room_03_Sheraton_New_York_Times_Square.png' },
-            { id: 'UU04', label: 'Hotel 4', lobby: './images/upper_upscale/upper_upscale_lobby_04_New_York_Hilton_Midtown.png', room: './images/upper_upscale/upper_upscale_room_04_New_York_Hilton_Midtown.png' },
-            { id: 'UU05', label: 'Hotel 5', lobby: './images/upper_upscale/upper_upscale_lobby_05_Chicago_Marriott_Downtown_Magnificent_Mile.png', room: './images/upper_upscale/upper_upscale_room_05_Chicago_Marriott_Downtown_Magnificent_Mile.png' },
-            { id: 'UU06', label: 'Hotel 6', lobby: './images/upper_upscale/upper_upscale_lobby_06_The_Westin_Michigan_Avenue_Chicago.png', room: './images/upper_upscale/upper_upscale_room_06_The_Westin_Michigan_Avenue_Chicago.png' },
-            { id: 'UU07', label: 'Hotel 7', lobby: './images/upper_upscale/upper_upscale_lobby_07_Sheraton_Grand_Chicago_Riverwalk.png', room: './images/upper_upscale/upper_upscale_room_07_Sheraton_Grand_Chicago_Riverwalk.png' },
-            { id: 'UU08', label: 'Hotel 8', lobby: './images/upper_upscale/upper_upscale_lobby_08_Hilton_Los_Angeles_Airport.png', room: './images/upper_upscale/upper_upscale_room_08_Hilton_Los_Angeles_Airport.png' },
-            { id: 'UU09', label: 'Hotel 9', lobby: './images/upper_upscale/upper_upscale_lobby_09_The_Westin_Bonaventure_Los_Angeles.png', room: './images/upper_upscale/upper_upscale_room_09_The_Westin_Bonaventure_Los_Angeles.png' },
-            { id: 'UU10', label: 'Hotel 10', lobby: './images/upper_upscale/upper_upscale_lobby_10_Sheraton_Grand_Los_Angeles.png', room: './images/upper_upscale/upper_upscale_room_10_Sheraton_Grand_Los_Angeles.png' },
+            { name: 'Chicago_Marriott_Downtown_Magnificent_Mile' },
+            { name: 'Hilton_Los_Angeles_Airport' },
+            { name: 'Hyatt_Regency_Times_Square' },
+            { name: 'New_York_Hilton_Midtown' },
+            { name: 'New_York_Marriott_Marquis' },
+            { name: 'Sheraton_Grand_Chicago_Riverwalk' },
+            { name: 'Sheraton_Grand_Los_Angeles' },
+            { name: 'Sheraton_New_York_Times_Square' },
+            { name: 'The_Westin_Bonaventure_Hotel_Los_Angeles' },
+            { name: 'The_Westin_Michigan_Avenue_Chicago' },
         ],
         upscale: [
-            { id: 'UP01', label: 'Hotel 1', lobby: './images/upscale/upscale_lobby_01_Courtyard_Manhattan_Central_Park.png', room: './images/upscale/upscale_room_01_Courtyard_Manhattan_Central_Park.png' },
-            { id: 'UP02', label: 'Hotel 2', lobby: './images/upscale/upscale_lobby_02_Hilton_Garden_Inn_Midtown_East_NYC.png', room: './images/upscale/upscale_room_02_Hilton_Garden_Inn_Midtown_East_NYC.png' },
-            { id: 'UP03', label: 'Hotel 3', lobby: './images/upscale/upscale_lobby_03_Hyatt_Place_Midtown_South_NYC.png', room: './images/upscale/upscale_room_03_Hyatt_Place_Midtown_South_NYC.png' },
-            { id: 'UP04', label: 'Hotel 4', lobby: './images/upscale/upscale_lobby_04_DoubleTree_Times_Square_South_NYC.png', room: './images/upscale/upscale_room_04_DoubleTree_Times_Square_South_NYC.png' },
-            { id: 'UP05', label: 'Hotel 5', lobby: './images/upscale/upscale_lobby_05_Courtyard_Chicago_Downtown_River_North.png', room: './images/upscale/upscale_room_05_Courtyard_Chicago_Downtown_River_North.png' },
-            { id: 'UP06', label: 'Hotel 6', lobby: './images/upscale/upscale_lobby_06_Hilton_Garden_Inn_Chicago_Downtown.png', room: './images/upscale/upscale_room_06_Hilton_Garden_Inn_Chicago_Downtown.png' },
-            { id: 'UP07', label: 'Hotel 7', lobby: './images/upscale/upscale_lobby_07_Hyatt_Place_Chicago_Downtown_The_Loop.png', room: './images/upscale/upscale_room_07_Hyatt_Place_Chicago_Downtown_The_Loop.png' },
-            { id: 'UP08', label: 'Hotel 8', lobby: './images/upscale/upscale_lobby_08_Courtyard_Los_Angeles_LA_LIVE.png', room: './images/upscale/upscale_room_08_Courtyard_Los_Angeles_LA_LIVE.png' },
-            { id: 'UP09', label: 'Hotel 9', lobby: './images/upscale/upscale_lobby_09_Hilton_Garden_Inn_Los_Angeles_Hollywood.png', room: './images/upscale/upscale_room_09_Hilton_Garden_Inn_Los_Angeles_Hollywood.png' },
-            { id: 'UP10', label: 'Hotel 10', lobby: './images/upscale/upscale_lobby_10_DoubleTree_Los_Angeles_Downtown.png', room: './images/upscale/upscale_room_10_DoubleTree_Los_Angeles_Downtown.png' },
+            { name: 'Aloft_Manhattan_Downtown' },
+            { name: 'Courtyard_Chicago_DowntownRiver_North' },
+            { name: 'Courtyard_Los_Angeles_LA_LIVE' },
+            { name: 'Courtyard_ManhattanCentral_Park' },
+            { name: 'DoubleTree_Times_Square_South' },
+            { name: 'DoubleTree_by_Hilton_Los_Angeles_Downtown' },
+            { name: 'Hilton_Garden_Inn_Chicago_DowntownMagnificent_Mile' },
+            { name: 'Hilton_Garden_Inn_Los_AngelesHollywood' },
+            { name: 'Hyatt_Place_ChicagoDowntown_-_The_Loop' },
+            { name: 'Residence_Inn_by_Marriott_New_York_ManhattanTimes_Square' },
         ],
         upper_midscale: [
-            { id: 'UM01', label: 'Hotel 1', lobby: './images/upper_midscale/upper_midscale_lobby_01_Hampton_Manhattan_Times_Square.png', room: './images/upper_midscale/upper_midscale_room_01_Hampton_Manhattan_Times_Square.png' },
-            { id: 'UM02', label: 'Hotel 2', lobby: './images/upper_midscale/upper_midscale_lobby_02_Fairfield_Manhattan_Times_Square.png', room: './images/upper_midscale/upper_midscale_room_02_Fairfield_Manhattan_Times_Square.png' },
-            { id: 'UM03', label: 'Hotel 3', lobby: './images/upper_midscale/upper_midscale_lobby_03_Holiday_Inn_Express_Manhattan_Times_Square_South.png', room: './images/upper_midscale/upper_midscale_room_03_Holiday_Inn_Express_Manhattan_Times_Square_South.png' },
-            { id: 'UM04', label: 'Hotel 4', lobby: './images/upper_midscale/upper_midscale_lobby_04_La_Quinta_Inn_Times_Square_South_NYC.png', room: './images/upper_midscale/upper_midscale_room_04_La_Quinta_Inn_Times_Square_South_NYC.png' },
-            { id: 'UM05', label: 'Hotel 5', lobby: './images/upper_midscale/upper_midscale_lobby_05_Hampton_Inn_Chicago_Downtown_N_Loop.png', room: './images/upper_midscale/upper_midscale_room_05_Hampton_Inn_Chicago_Downtown_N_Loop.png' },
-            { id: 'UM06', label: 'Hotel 6', lobby: './images/upper_midscale/upper_midscale_lobby_06_Fairfield_Inn_Chicago_Downtown.png', room: './images/upper_midscale/upper_midscale_room_06_Fairfield_Inn_Chicago_Downtown.png' },
-            { id: 'UM07', label: 'Hotel 7', lobby: './images/upper_midscale/upper_midscale_lobby_07_Holiday_Inn_Express_Chicago_Magnificent_Mile.png', room: './images/upper_midscale/upper_midscale_room_07_Holiday_Inn_Express_Chicago_Magnificent_Mile.png' },
-            { id: 'UM08', label: 'Hotel 8', lobby: './images/upper_midscale/upper_midscale_lobby_08_Hampton_Inn_Los_Angeles_Hollywood.png', room: './images/upper_midscale/upper_midscale_room_08_Hampton_Inn_Los_Angeles_Hollywood.png' },
-            { id: 'UM09', label: 'Hotel 9', lobby: './images/upper_midscale/upper_midscale_lobby_09_Fairfield_Inn_Los_Angeles_LAX.png', room: './images/upper_midscale/upper_midscale_room_09_Fairfield_Inn_Los_Angeles_LAX.png' },
-            { id: 'UM10', label: 'Hotel 10', lobby: './images/upper_midscale/upper_midscale_lobby_10_Holiday_Inn_Express_Los_Angeles_Downtown_West.png', room: './images/upper_midscale/upper_midscale_room_10_Holiday_Inn_Express_Los_Angeles_Downtown_West.png' },
+            { name: 'Fairfield_Inn_Chicago_DowntownMagnificent_Mile' },
+            { name: 'Fairfield_Inn_Los_Angeles_LAXEl_Segundo' },
+            { name: 'Fairfield_by_Marriott_TS' },
+            { name: 'Hampton_Inn_Chicago_DowntownN_Loop' },
+            { name: 'Hampton_Inn_Suites_Los_AngelesHollywood' },
+            { name: 'Hampton_by_Hilton_TS_Central' },
+            { name: 'Holiday_Inn_Express_Chicago_Magnificent_Mile' },
+            { name: 'Holiday_Inn_Express_Los_Angeles_Downtown_West' },
+            { name: 'Holiday_Inn_Express_TS_South' },
+            { name: 'MOXY_Times_Square' },
         ],
         midscale: [
-            { id: 'MS01', label: 'Hotel 1', lobby: './images/midscale/midscale_lobby_01_Best_Western_Queens_Court.png', room: './images/midscale/midscale_room_01_Best_Western_Queens_Court.png' },
-            { id: 'MS02', label: 'Hotel 2', lobby: './images/midscale/midscale_lobby_02_Wingate_by_Wyndham_Midtown_South.png', room: './images/midscale/midscale_room_02_Wingate_by_Wyndham_Midtown_South.png' },
-            { id: 'MS03', label: 'Hotel 3', lobby: './images/midscale/midscale_lobby_03_Tru_by_Hilton_Brooklyn.png', room: './images/midscale/midscale_room_03_Tru_by_Hilton_Brooklyn.png' },
-            { id: 'MS04', label: 'Hotel 4', lobby: './images/midscale/midscale_lobby_04_Ramada_by_Wyndham_Bronx.png', room: './images/midscale/midscale_room_04_Ramada_by_Wyndham_Bronx.png' },
-            { id: 'MS05', label: 'Hotel 5', lobby: './images/midscale/midscale_lobby_05_Quality_Inn_near_Sunset_Park.png', room: './images/midscale/midscale_room_05_Quality_Inn_near_Sunset_Park.png' },
-            { id: 'MS06', label: 'Hotel 6', lobby: './images/midscale/midscale_lobby_06_Best_Western_Grant_Park_Hotel.png', room: './images/midscale/midscale_room_06_Best_Western_Grant_Park_Hotel.png' },
-            { id: 'MS07', label: 'Hotel 7', lobby: './images/midscale/midscale_lobby_07_Tru_by_Hilton_Naperville_Chicago.png', room: './images/midscale/midscale_room_07_Tru_by_Hilton_Naperville_Chicago.png' },
-            { id: 'MS08', label: 'Hotel 8', lobby: './images/midscale/midscale_lobby_08_Baymont_by_Wyndham_Chicago_Alsip.png', room: './images/midscale/midscale_room_08_Baymont_by_Wyndham_Chicago_Alsip.png' },
-            { id: 'MS09', label: 'Hotel 9', lobby: './images/midscale/midscale_lobby_09_Quality_Inn_Hollywood_Walk_of_Fame.png', room: './images/midscale/midscale_room_09_Quality_Inn_Hollywood_Walk_of_Fame.png' },
-            { id: 'MS10', label: 'Hotel 10', lobby: './images/midscale/midscale_lobby_10_Best_Western_Hollywood_Plaza_Hotel.png', room: './images/midscale/midscale_room_10_Best_Western_Hollywood_Plaza_Hotel.png' },
+            { name: 'Baymont_by_Wyndham_ChicagoAlsip' },
+            { name: 'Best_Western_Grant_Park_Hotel' },
+            { name: 'Best_Western_Hollywood_Plaza_Hotel' },
+            { name: 'Best_Western_Queens_Court' },
+            { name: 'Quality_Inn_Near_Hollywood_Walk_of_Fame' },
+            { name: 'Quality_Inn_near_Sunset_Park' },
+            { name: 'Ramada_by_Wyndham_Bronx' },
+            { name: 'Tru_by_Hilton_Brooklyn' },
+            { name: 'Tru_by_Hilton_Naperville_Chicago' },
+            { name: 'Wingate_by_Wyndham_Midtown_South' },
         ],
     },
 
-    // ── 5개 그룹 (Balanced Block Design) ──
-    // 각 그룹은 등급당 2개 호텔 = 10개 호텔
-    // 인덱스: 0-based (0=호텔1, 1=호텔2, ...)
+    // ── 10 Balanced Block Design 그룹 (A~J) ──
+    // 각 그룹은 등급당 1개 호텔 = 5개 호텔
+    // 인덱스: 0-based (A=호텔1, B=호텔2, ..., J=호텔10)
     groups: {
-        A: [0, 1],   // 각 tier에서 호텔 1, 2
-        B: [2, 3],   // 각 tier에서 호텔 3, 4
-        C: [4, 5],   // 각 tier에서 호텔 5, 6
-        D: [6, 7],   // 각 tier에서 호텔 7, 8
-        E: [8, 9],   // 각 tier에서 호텔 9, 10
+        A: [0], B: [1], C: [2], D: [3], E: [4],
+        F: [5], G: [6], H: [7], I: [8], J: [9],
     },
 };
 
 // ============================================================
-// S-O-R DIMENSIONS & ITEMS (from eval_pipeline_v9.py)
+// S-O-R DIMENSIONS & ITEMS (42 items)
+// reverse: true 이면 응답값을 8-x로 자동 역코딩하여 _R 필드에 저장
 // ============================================================
 
 const DIMENSIONS = [
@@ -434,13 +401,13 @@ const DIMENSIONS = [
     { code:'S-3', name:'Lighting', sor:'S', items:[
         {code:'S-3-1', text:'The lighting in this space is appropriate.'},
         {code:'S-3-2', text:'This space receives good natural light.'},
-        {code:'S-3-3', text:'The lighting in this space creates a positive visual effect.'},
-        {code:'S-3-4', text:'The lighting design effectively sets the mood of this space.'},
+        {code:'S-3-3', text:'The lighting creates a positive visual effect.'},
+        {code:'S-3-4', text:'The lighting design effectively sets the mood.'},
     ]},
     { code:'S-4', name:'Spatial Functionality', sor:'S', items:[
-        {code:'S-4-1', text:'The layout of this space makes it easy to move around.'},
+        {code:'S-4-1', text:'The layout makes it easy to move around.'},
         {code:'S-4-2', text:'The furniture positioning looks practical.'},
-        {code:'S-4-3', text:'The spacing between the furniture appears adequate.'},
+        {code:'S-4-3', text:'The spacing between furniture appears adequate.'},
         {code:'S-4-4', text:'The spatial arrangement looks well-proportioned.'},
     ]},
     { code:'S-5', name:'Spaciousness', sor:'S', items:[
@@ -455,20 +422,20 @@ const DIMENSIONS = [
     ]},
     { code:'O-1', name:'Pleasure', sor:'O', items:[
         {code:'O-1-1', text:'I feel pleased when looking at this space.'},
-        {code:'O-1-2', text:'I feel a sense of amazement when looking at this space.'},
+        {code:'O-1-2', text:'I feel a sense of amazement.'},
         {code:'O-1-3', text:'This space makes me feel delighted.'},
         {code:'O-1-4', text:'I feel inspired when looking at this space.'},
     ]},
     { code:'O-2', name:'Arousal', sor:'O', items:[
         {code:'O-2-1', text:'This space makes me feel stimulated.'},
         {code:'O-2-2', text:'This space makes me feel excited.'},
-        {code:'O-2-3', text:'This space makes me feel calm.'},
-        {code:'O-2-4', text:'This space makes me feel peaceful.'},
+        {code:'O-2-3', text:'This space makes me feel calm.', reverse:true},        // 역코딩
+        {code:'O-2-4', text:'This space makes me feel peaceful.', reverse:true},    // 역코딩
     ]},
     { code:'O-3', name:'Quality Expectation', sor:'O', items:[
         {code:'O-3-1', text:'This space appears to be of good quality.'},
         {code:'O-3-2', text:'This space looks well-maintained.'},
-        {code:'O-3-3', text:'This space appears to fulfill its intended function well.'},
+        {code:'O-3-3', text:'This space appears to fulfill its intended function.'},
     ]},
     { code:'O-4', name:'Overall Attitude', sor:'O', items:[
         {code:'O-4-1', text:'My overall impression of this space is good.'},
@@ -477,13 +444,13 @@ const DIMENSIONS = [
     ]},
     { code:'R-1', name:'Booking Intention', sor:'R', items:[
         {code:'R-1-1', text:'My willingness to book this hotel is high.'},
-        {code:'R-1-2', text:'The probability that I would book this hotel is high.'},
+        {code:'R-1-2', text:'The probability that I would book is high.'},
         {code:'R-1-3', text:'I would definitely consider reserving this hotel.'},
     ]},
     { code:'R-2', name:'Recommendation Intention', sor:'R', items:[
-        {code:'R-2-1', text:'I will say positive things about this hotel to others.'},
-        {code:'R-2-2', text:'I will recommend this hotel to my friends and family.'},
-        {code:'R-2-3', text:'I will recommend this hotel to someone who seeks my advice.'},
+        {code:'R-2-1', text:'I will say positive things about this hotel.'},
+        {code:'R-2-2', text:'I will recommend this hotel to others.'},
+        {code:'R-2-3', text:'I will encourage friends and relatives to visit.'},
     ]},
 ];
 
@@ -494,12 +461,28 @@ const DIMENSIONS = [
 let currentPage = 0;
 let totalPages = 0;
 const responses = {};
-let participantId = 'P_' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
+
+// Prolific PID 받기 (URL 파라미터)
+const urlParams = new URLSearchParams(window.location.search);
+let participantId = urlParams.get('PROLIFIC_PID') || ('ANON_' + Date.now() + '_' + Math.random().toString(36).substr(2,6));
+
 let assignedGroup = '';
 let assignedHotels = [];
-let participantGeneration = '';   // 'Gen Z' or 'Gen X'
-let participantPurpose = '';      // 'Business' or 'Leisure'
+let participantGeneration = '';
+let participantPurpose = '';
 let screenedOut = false;
+
+// 시작 시각
+const startTime = new Date().toISOString();
+
+// 완료 코드 (Prolific submission code)
+const completionCode = 'HOTEL' + Math.random().toString(36).substr(2,8).toUpperCase();
+
+// Attention Check 위치: 호텔 3 (인덱스 2)의 lobby, 호텔 5 (인덱스 4)의 room
+const ATTENTION_CHECKS = {
+    1: { hotelIdx: 2, space: 'lobby', text: "To verify you are reading carefully, please select '6' for this item.", expected: 6 },
+    2: { hotelIdx: 4, space: 'room',  text: "This is an attention check. Please select 'Strongly Disagree (1)'.",      expected: 1 },
+};
 
 // ============================================================
 // SCREENING CHECK
@@ -517,7 +500,7 @@ function checkScreening() {
     let fail = false;
     let reason = '';
 
-    // Check generation: Gen Z (1997-2008, age 18-29) or Gen X (1965-1980, age 46-61)
+    // Gen Z (1997-2008) 또는 Gen X (1965-1980)만 통과
     if (birthYear) {
         const isGenZ = birthYear >= 1997 && birthYear <= 2008;
         const isGenX = birthYear >= 1965 && birthYear <= 1980;
@@ -529,22 +512,7 @@ function checkScreening() {
         }
     }
 
-    // Store purpose
-    if (purpose) {
-        participantPurpose = purpose;
-        responses['_travelPurpose'] = purpose;
-    }
-
-    // Store generation
-    if (participantGeneration) {
-        responses['_generation'] = participantGeneration;
-    }
-    if (birthYear) {
-        responses['_birthYear'] = birthYear;
-    }
-    if (gender) {
-        responses['_gender'] = gender;
-    }
+    if (purpose) participantPurpose = purpose;
 
     screenedOut = fail;
     failEl.style.display = fail ? 'block' : 'none';
@@ -565,31 +533,35 @@ function shuffleArray(arr) {
 }
 
 function assignGroupAndHotels() {
-    // 1. 랜덤 그룹 배정 (A~E)
+    // 1. 랜덤 그룹 배정 (A~J)
     const groupKeys = Object.keys(CONFIG.groups);
     assignedGroup = groupKeys[Math.floor(Math.random() * groupKeys.length)];
     const indices = CONFIG.groups[assignedGroup];
 
-    // 2. 배정된 그룹의 호텔 수집 (등급당 2개 = 10개)
+    // 2. 배정된 그룹의 호텔 수집 (등급당 1개 = 5개)
     const tiers = Object.keys(CONFIG.allHotels);
     let hotels = [];
     tiers.forEach(tier => {
         indices.forEach(idx => {
             const hotel = CONFIG.allHotels[tier][idx];
-            hotels.push({ ...hotel, tier: tier });
+            const idx2 = String(idx + 1).padStart(2, '0');
+            const lobbyFile = `${CONFIG.imageBase}/${tier}/${tier}_lobby_${idx2}_${hotel.name}.png`;
+            const roomFile  = `${CONFIG.imageBase}/${tier}/${tier}_room_${idx2}_${hotel.name}.png`;
+            hotels.push({
+                id: `${tier.toUpperCase()}_${idx2}`,
+                tier: tier,
+                tierIdx: idx,
+                name: hotel.name,
+                lobby: lobbyFile,
+                room: roomFile,
+            });
         });
     });
 
-    // 3. 10개 호텔 순서 랜덤화 (순서효과 방지)
+    // 3. 5개 호텔 순서 랜덤화 (순서효과 방지)
     assignedHotels = shuffleArray(hotels);
 
-    // 4. 메타데이터 기록
-    responses['_participantId'] = participantId;
-    responses['_assignedGroup'] = assignedGroup;
-    responses['_hotelOrder'] = assignedHotels.map(h => h.id).join(',');
-    responses['_timestamp'] = new Date().toISOString();
-
-    console.log(`[Survey] Group: ${assignedGroup}, Hotels: ${assignedHotels.map(h=>h.id).join(', ')}`);
+    console.log(`[Survey] Group: ${assignedGroup}, Hotels:`, assignedHotels.map(h=>h.id));
 }
 
 // ============================================================
@@ -597,28 +569,21 @@ function assignGroupAndHotels() {
 // ============================================================
 
 function buildAllPages() {
-    // 그룹 배정 & 호텔 랜덤화
     assignGroupAndHotels();
 
     const container = document.getElementById('pagesContainer');
     let pageIndex = 0;
 
-    // — Page: Consent —
     container.innerHTML += buildConsentPage(pageIndex++);
-
-    // — Page: Demographics —
     container.innerHTML += buildDemoPage(pageIndex++);
 
-    // — Pages: Hotels (transition + lobby + room for each) —
-    // 순서: 랜덤 배정된 10개 호텔
-    // 공간 순서: 로비 → 객실 (고정, 연구 일관성)
+    // Hotels: (transition + lobby + room) × 5
     assignedHotels.forEach((hotel, hi) => {
         container.innerHTML += buildTransitionPage(pageIndex++, hotel, hi + 1, assignedHotels.length);
-        container.innerHTML += buildHotelPage(pageIndex++, hotel, 'lobby', hotel.lobby);
-        container.innerHTML += buildHotelPage(pageIndex++, hotel, 'room', hotel.room);
+        container.innerHTML += buildHotelPage(pageIndex++, hotel, hi, 'lobby', hotel.lobby);
+        container.innerHTML += buildHotelPage(pageIndex++, hotel, hi, 'room',  hotel.room);
     });
 
-    // — Page: Completion —
     container.innerHTML += buildCompletionPage(pageIndex++);
 
     totalPages = pageIndex;
@@ -633,10 +598,9 @@ function buildTransitionPage(idx, hotel, hotelNum, totalHotels) {
             <div style="font-size:13px; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:2px;">
                 Hotel ${hotelNum} of ${totalHotels}
             </div>
-            <h2 style="font-size:28px; margin-bottom:16px;">${hotel.label}</h2>
+            <h2 style="font-size:28px; margin-bottom:16px;">Hotel ${hotelNum}</h2>
 
-            <!-- Scenario Framing -->
-            <div id="scenario_${idx}" style="background:#fef9e7; border:1px solid #f0d060; border-radius:10px; padding:16px 24px; margin:0 auto 20px; max-width:520px;">
+            <div style="background:#fef9e7; border:1px solid #f0d060; border-radius:10px; padding:16px 24px; margin:0 auto 20px; max-width:520px;">
                 <p style="font-size:15px; color:#6d5800; margin:0; line-height:1.7;">
                     <strong>📌 Scenario:</strong> Imagine you are considering this hotel for a 
                     <strong class="scenario-purpose" style="color:#c0392b;"></strong> trip.
@@ -663,11 +627,11 @@ function buildConsentPage(idx) {
             <div class="consent-box">
                 <p><strong>Study Title:</strong> Visual Assessment of Hotel Interior Spaces</p>
                 <p><strong>Purpose:</strong> This study examines how people evaluate hotel interior spaces using 360° panoramic images.</p>
-                <p><strong>Procedure:</strong> You will view 360° panoramic images of hotel lobbies and rooms. For each space, you will look around the space by dragging the image, then answer evaluation questions. You will evaluate 10 hotels total (lobby and room for each). The entire survey takes approximately 60–70 minutes.</p>
+                <p><strong>Procedure:</strong> You will view 360° panoramic images of hotel lobbies and rooms. For each space, you will look around by dragging the image, then answer evaluation questions. You will evaluate <strong>5 hotels</strong> total (lobby and room for each). The entire survey takes approximately <strong>30 minutes</strong>.</p>
+                <p><strong>Compensation:</strong> $5.00 upon completion (calculated at $10/hour).</p>
                 <p><strong>Risks:</strong> There are no known risks associated with this study.</p>
-                <p><strong>Confidentiality:</strong> Your responses will be anonymous and used only for academic research purposes.</p>
-                <p><strong>Voluntary Participation:</strong> Your participation is voluntary. You may withdraw at any time without penalty.</p>
-                <p><strong>Contact:</strong> If you have questions, please contact the research team at [email].</p>
+                <p><strong>Confidentiality:</strong> Your responses will be anonymous and used only for academic research purposes. Only your Prolific ID is linked to your data, and only for payment.</p>
+                <p><strong>Voluntary Participation:</strong> Your participation is voluntary. You may withdraw at any time, but you must complete the survey to receive compensation.</p>
             </div>
             <div class="consent-check">
                 <input type="checkbox" id="consentCheck" onchange="updateNav()">
@@ -688,11 +652,11 @@ function buildDemoPage(idx) {
                 <label>What is your birth year?</label>
                 <select id="demo_birthyear" onchange="checkScreening(); updateNav()">
                     <option value="">Select...</option>
-                    ${Array.from({length: 50}, (_, i) => 2008 - i).map(y =>
+                    ${Array.from({length: 51}, (_, i) => 2008 - i).map(y =>
                         `<option value="${y}">${y}</option>`
                     ).join('')}
                 </select>
-                <div class="dim-hint" style="font-size:11px; color:var(--muted); margin-top:4px;">
+                <div style="font-size:11px; color:var(--muted); margin-top:4px;">
                     This study is open to participants born 1965–1980 (Gen X) or 1997–2008 (Gen Z).
                 </div>
             </div>
@@ -715,41 +679,31 @@ function buildDemoPage(idx) {
                     <option value="Business">Business (work trips, conferences, meetings)</option>
                     <option value="Leisure">Leisure (vacation, personal travel, tourism)</option>
                 </select>
-                <div class="dim-hint" style="font-size:11px; color:var(--muted); margin-top:4px;">
+                <div style="font-size:11px; color:var(--muted); margin-top:4px;">
                     Please select the purpose that best describes <strong>most</strong> of your hotel stays.
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>How often do you stay at hotels per year?</label>
-                <select id="demo_frequency" onchange="updateNav()">
-                    <option value="">Select...</option>
-                    <option>0 times</option><option>1-2 times</option><option>3-5 times</option>
-                    <option>6-10 times</option><option>More than 10 times</option>
-                </select>
-            </div>
-
-            <!-- Screening fail message (hidden by default) -->
             <div id="screeningFail" style="display:none; background:#fdf0f0; border:1px solid #e74c3c; border-radius:8px; padding:16px; margin-top:16px;">
                 <p style="color:#c0392b; font-weight:500; margin-bottom:8px;">Thank you for your interest.</p>
-                <p style="color:#555; font-size:14px;">Unfortunately, you do not meet the eligibility criteria for this study. Please return this submission on the platform.</p>
+                <p style="color:#555; font-size:14px;">Unfortunately, you do not meet the eligibility criteria for this study. Please return this submission on Prolific.</p>
                 <p id="screeningFailReason" style="color:#888; font-size:12px; margin-top:8px;"></p>
             </div>
         </div>
     </div>`;
 }
 
-function buildHotelPage(idx, hotel, spaceType, imageFile) {
+function buildHotelPage(idx, hotel, hotelIdx, spaceType, imageFile) {
     const spaceLabel = spaceType === 'lobby' ? 'Lobby' : 'Room';
     const pageKey = `${hotel.id}_${spaceType}`;
 
     let questionsHtml = '';
     DIMENSIONS.forEach(dim => {
-        const sorLabel = dim.sor === 'S' ? 'Stimulus' : dim.sor === 'O' ? 'Organism' : 'Response';
         questionsHtml += `<div class="dimension-group">`;
         questionsHtml += `<div class="dim-label">${dim.name}</div>`;
         dim.items.forEach(item => {
             const key = `${pageKey}_${item.code}`;
+            const reverseFlag = item.reverse ? 'true' : 'false';
             questionsHtml += `
                 <div class="question-row">
                     <div class="question-text">${item.text}</div>
@@ -759,7 +713,7 @@ function buildHotelPage(idx, hotel, spaceType, imageFile) {
                             <span class="anchor">Strongly<br>Disagree</span>
                             ${[1,2,3,4,5,6,7].map(v =>
                                 `<div class="likert-btn" data-key="${key}" data-value="${v}"
-                                     onclick="selectLikert(this,'${key}',${v})">${v}</div>`
+                                     onclick="selectLikert(this,'${key}',${v},${reverseFlag})">${v}</div>`
                             ).join('')}
                             <span class="anchor">Strongly<br>Agree</span>
                         </div>
@@ -769,22 +723,48 @@ function buildHotelPage(idx, hotel, spaceType, imageFile) {
         questionsHtml += `</div>`;
     });
 
-    // WTP (room only — Payment Card Method)
+    // Attention Check 삽입 (해당 호텔/공간에서만)
+    let acHtml = '';
+    for (const [num, ac] of Object.entries(ATTENTION_CHECKS)) {
+        if (hotelIdx === ac.hotelIdx && spaceType === ac.space) {
+            const acKey = `_AC${num}`;
+            acHtml += `
+            <div class="dimension-group attention-check">
+                <div class="dim-label" style="color:#f39c12;">Quality Check</div>
+                <div class="question-row">
+                    <div class="question-text">${ac.text}</div>
+                    <div>
+                        <div class="likert-mobile-label">1 = Strongly Disagree · · · 7 = Strongly Agree</div>
+                        <div class="likert-scale">
+                            <span class="anchor">Strongly<br>Disagree</span>
+                            ${[1,2,3,4,5,6,7].map(v =>
+                                `<div class="likert-btn" data-key="${acKey}" data-value="${v}"
+                                     onclick="selectLikert(this,'${acKey}',${v},false)">${v}</div>`
+                            ).join('')}
+                            <span class="anchor">Strongly<br>Agree</span>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+    }
+
+    // WTP — room 페이지에만
     let wtpHtml = '';
     if (spaceType === 'room') {
         const wtpKey = `${pageKey}_WTP`;
         const wtpOptions = [
             '$50 or less',
-            '$51 – $100',
-            '$101 – $150',
-            '$151 – $200',
-            '$201 – $250',
-            '$251 – $300',
-            '$301 – $400',
-            '$401 – $500',
-            '$501 – $700',
-            '$701 – $1,000',
+            '$51 - $100',
+            '$101 - $150',
+            '$151 - $200',
+            '$201 - $300',
+            '$301 - $400',
+            '$401 - $500',
+            '$501 - $700',
+            '$701 - $1,000',
             'More than $1,000',
+            'Prefer not to answer',
         ];
         wtpHtml = `
         <div class="dimension-group">
@@ -795,7 +775,7 @@ function buildHotelPage(idx, hotel, spaceType, imageFile) {
                     <select id="${wtpKey}" style="width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-size:14px; background:#fff;"
                             onchange="responses['${wtpKey}']=this.value; updateNav()">
                         <option value="">— Select a price range —</option>
-                        ${wtpOptions.map((opt, i) => `<option value="${i+1}">${opt}</option>`).join('')}
+                        ${wtpOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
                     </select>
                 </div>
             </div>
@@ -803,18 +783,20 @@ function buildHotelPage(idx, hotel, spaceType, imageFile) {
     }
 
     const badgeColor = spaceType === 'lobby' ? '#3498db' : '#2ecc71';
-    const badgeIcon = spaceType === 'lobby' ? '🏛' : '🛏';
+    const badgeIcon  = spaceType === 'lobby' ? '🏛' : '🛏';
+    const hotelLabel = `Hotel ${hotelIdx + 1}`;
 
     return `
     <div class="page has-viewer" data-page="${idx}" data-hotel="${hotel.id}" data-space="${spaceType}"
-         data-viewer-label="${hotel.label}" data-viewer-image="${imageFile}">
+         data-viewer-label="${hotelLabel}" data-viewer-image="${imageFile}">
         <div class="card">
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-                <h2 style="margin:0;">${hotel.label}</h2>
+                <h2 style="margin:0;">${hotelLabel}</h2>
                 <span style="display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; color:#fff; background:${badgeColor};">${badgeIcon} ${spaceLabel}</span>
             </div>
             <p>Please rate each statement based on what you observed. (1 = Strongly Disagree, 7 = Strongly Agree)</p>
             ${questionsHtml}
+            ${acHtml}
             ${wtpHtml}
         </div>
     </div>`;
@@ -824,31 +806,37 @@ function buildCompletionPage(idx) {
     return `
     <div class="page" data-page="${idx}">
         <div class="card" style="text-align:center;">
-            <h2>Thank You!</h2>
+            <h2>🎉 Thank You!</h2>
             <p style="font-size:16px; margin-bottom:24px;">Your responses have been recorded successfully.</p>
-            <p style="margin-bottom:16px;">Your completion code:</p>
+            <p style="margin-bottom:16px;">Your Prolific completion code:</p>
             <div class="completion-code" id="completionCode">LOADING...</div>
-            <p style="margin-top:16px; font-size:14px; color:var(--muted);">
-                Please copy this code and paste it back in Prolific to confirm your participation.
+            <p style="margin-top:20px; font-size:14px; color:var(--muted);">
+                Please copy this code, or click the link below to return to Prolific and confirm your completion.
+            </p>
+            <p style="margin-top:16px;">
+                <a id="prolificReturn" href="#" target="_blank" style="color:var(--accent); font-weight:600; text-decoration:none;">→ Click here to return to Prolific</a>
             </p>
         </div>
     </div>`;
 }
 
 // ============================================================
-// LIKERT SELECTION
+// LIKERT SELECTION (with auto reverse-coding)
 // ============================================================
 
-function selectLikert(el, key, value) {
-    // Deselect siblings
+function selectLikert(el, key, value, isReverse) {
     el.parentElement.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
     el.classList.add('selected');
     responses[key] = value;
+    // 역코딩: O-2-3, O-2-4 → _R 필드에 8-x 자동 저장
+    if (isReverse) {
+        responses[key + '_R'] = 8 - value;
+    }
     updateNav();
 }
 
 // ============================================================
-// 360° VIEWER INIT
+// 360° VIEWER (fixed, reused across same-hotel lobby↔room)
 // ============================================================
 
 let activeViewer = null;
@@ -861,16 +849,13 @@ function initViewer(pageEl) {
     if (!imageFile) return;
 
     const fixedViewer = document.getElementById('fixedViewer');
-    const viewerPano = document.getElementById('viewerPano');
     const viewerTitle = document.getElementById('viewerTitle');
     const viewerBadge = document.getElementById('viewerBadge');
 
-    // Show fixed viewer
     fixedViewer.classList.add('active');
     document.body.classList.add('split-mode');
     viewerTitle.textContent = label;
 
-    // Badge: Lobby = blue, Room = green
     if (space === 'lobby') {
         viewerBadge.textContent = '🏛 Lobby';
         viewerBadge.style.background = '#3498db';
@@ -879,13 +864,12 @@ function initViewer(pageEl) {
         viewerBadge.style.background = '#2ecc71';
     }
 
-    // Only re-init if different image
+    // 같은 이미지면 재초기화 안 함 (lobby→room 전환 시에만 다시 로드)
     if (currentViewerImage === imageFile) return;
     currentViewerImage = imageFile;
 
-    // Destroy previous viewer
     if (activeViewer) {
-        activeViewer.destroy();
+        try { activeViewer.destroy(); } catch(e) {}
         activeViewer = null;
     }
 
@@ -901,7 +885,7 @@ function initViewer(pageEl) {
         mouseZoom: false,
         friction: 0.3, yawSpeed: 1, pitchSpeed: 1,
         compass: false,
-        strings: { loadingLabel: "Loading..." }
+        strings: { loadingLabel: "Loading 360° image..." }
     });
 }
 
@@ -925,12 +909,12 @@ function showPage(idx) {
         window.scrollTo(0, 0);
         page.scrollTop = 0;
 
-        // Inject travel purpose into scenario framing
+        // Scenario에 travel purpose 자동 치환
         page.querySelectorAll('.scenario-purpose').forEach(el => {
             el.textContent = participantPurpose ? participantPurpose.toLowerCase() : '___';
         });
 
-        // Show/hide fixed viewer based on page type
+        // 호텔 페이지면 viewer 표시, 아니면 숨김
         if (page.classList.contains('has-viewer')) {
             setTimeout(() => initViewer(page), 100);
         } else {
@@ -945,7 +929,7 @@ function showPage(idx) {
 
 function nextPage() {
     if (currentPage === totalPages - 2) {
-        // Last content page → submit → show completion
+        // 마지막 컨텐츠 페이지 → 제출 → 완료 페이지
         submitData();
         showPage(currentPage + 1);
         return;
@@ -966,16 +950,16 @@ function updateNav() {
     backBtn.style.display = currentPage === 0 ? 'none' : 'inline-block';
 
     if (currentPage === totalPages - 1) {
-        // Completion page
         nextBtn.style.display = 'none';
         backBtn.style.display = 'none';
     } else if (currentPage === totalPages - 2) {
+        nextBtn.style.display = 'inline-block';
         nextBtn.textContent = 'Submit';
     } else {
+        nextBtn.style.display = 'inline-block';
         nextBtn.textContent = 'Next';
     }
 
-    // Validation
     nextBtn.disabled = !isPageValid(currentPage);
 }
 
@@ -983,21 +967,21 @@ function isPageValid(idx) {
     const page = document.querySelector(`.page[data-page="${idx}"]`);
     if (!page) return false;
 
-    // Consent page
+    // Consent
     const consent = page.querySelector('#consentCheck');
     if (consent) return consent.checked;
 
-    // Demographics page — all fields filled AND not screened out
+    // Demographics — 모든 select 채워야 함 + 스크리닝 통과
     const selects = page.querySelectorAll('select');
     if (selects.length > 0 && !page.dataset.hotel) {
         const allFilled = Array.from(selects).every(s => s.value !== '');
         return allFilled && !screenedOut;
     }
 
-    // Hotel pages — all likert answered + WTP (if room)
-    const likerts = page.querySelectorAll('.likert-scale');
-    if (likerts.length > 0) {
-        const allLikert = Array.from(likerts).every(ls => ls.querySelector('.selected'));
+    // Hotel — 모든 likert 응답 + (room이면 WTP)
+    const likertGroups = page.querySelectorAll('.likert-scale');
+    if (likertGroups.length > 0) {
+        const allLikert = Array.from(likertGroups).every(ls => ls.querySelector('.selected'));
         const wtpSelect = page.querySelector('select[id*="_WTP"]');
         if (wtpSelect) {
             return allLikert && wtpSelect.value !== '';
@@ -1018,49 +1002,61 @@ function updateProgress() {
 // DATA SUBMISSION
 // ============================================================
 
-function collectAllData() {
-    // Demographics
-    const demo = {
-        birthYear: document.getElementById('demo_birthyear')?.value || '',
-        generation: participantGeneration,
-        gender: document.getElementById('demo_gender')?.value || '',
-        frequency: document.getElementById('demo_frequency')?.value || '',
-        travelPurpose: participantPurpose,
-    };
+function evaluateAttentionChecks() {
+    // Attention Check 응답 평가 → metadata에 PASS/FAIL 기록
+    for (const [num, ac] of Object.entries(ATTENTION_CHECKS)) {
+        const key = `_AC${num}`;
+        const val = responses[key];
+        if (val === undefined) {
+            responses[`_attentionCheck${num}`] = 'NA';
+        } else {
+            responses[`_attentionCheck${num}`] = (parseInt(val) === ac.expected) ? 'PASS' : 'FAIL';
+        }
+    }
+}
 
-    return {
-        participantId,
-        assignedGroup,
-        hotelOrder: assignedHotels.map(h => h.id).join(','),
-        timestamp: new Date().toISOString(),
-        demographics: demo,
-        responses: { ...responses },
+function collectAllData() {
+    evaluateAttentionChecks();
+
+    // 한 행으로 평탄화 (Google Sheets에 한 줄로 저장)
+    const payload = {
+        _participantId: participantId,
+        _assignedGroup: assignedGroup,
+        _hotelOrder: assignedHotels.map(h => h.id).join('|'),
+        _hotelOrderDetailed: assignedHotels.map(h => `${h.tier}_${h.tierIdx+1}_${h.name}`).join('|'),
+        _generation: participantGeneration,
+        _travelPurpose: participantPurpose,
+        _birthYear: document.getElementById('demo_birthyear')?.value || '',
+        _gender: document.getElementById('demo_gender')?.value || '',
+        _attentionCheck1: responses._attentionCheck1 || 'NA',
+        _attentionCheck2: responses._attentionCheck2 || 'NA',
+        _startTime: startTime,
+        _endTime: new Date().toISOString(),
+        _completionCode: completionCode,
+        ...responses,
     };
+    return payload;
 }
 
 function submitData() {
     const data = collectAllData();
-    console.log('Survey data:', JSON.stringify(data, null, 2));
+    console.log('[Survey] Submitting data:', data);
 
-    // Generate completion code
-    const code = 'C' + Math.random().toString(36).substr(2, 8).toUpperCase();
-    document.getElementById('completionCode').textContent = code;
+    // 완료 코드 표시
+    document.getElementById('completionCode').textContent = completionCode;
+    document.getElementById('prolificReturn').href = `${CONFIG.prolificReturnUrl}?cc=${completionCode}`;
 
-    // Send to Google Sheets (if URL configured)
+    // ⚠️ Google Sheets로 전송 (Apps Script Web App)
+    // 여기에 Apps Script URL 넣으세요 → CONFIG.googleSheetsUrl
     if (CONFIG.googleSheetsUrl) {
         fetch(CONFIG.googleSheetsUrl, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
-        }).catch(err => console.error('Submit error:', err));
-    }
-
-    // Redirect to Prolific (if configured)
-    if (CONFIG.prolificReturnUrl) {
-        setTimeout(() => {
-            window.location.href = CONFIG.prolificReturnUrl + '?cc=' + code;
-        }, 5000);
+        }).catch(err => console.error('[Survey] Submit error:', err));
+    } else {
+        console.warn('[Survey] CONFIG.googleSheetsUrl is not set. Data not sent.');
     }
 }
 
