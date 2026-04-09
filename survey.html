@@ -481,6 +481,10 @@ const startTime = new Date().toISOString();
 // 완료 코드 (Prolific submission code)
 const completionCode = 'HOTEL' + Math.random().toString(36).substr(2,8).toUpperCase();
 
+// ⭐ ADMIN 모드: URL에 ?admin=1 붙이면 활성화 (교수님 시연/디버그용)
+// - 키보드로 페이지 이동, validation 우회, 자동 채우기 가능
+const ADMIN_MODE = urlParams.get('admin') === '1';
+
 // Attention Check (4개) — 학계 표준: SOR 문항 사이에 자연스럽게 삽입
 // - 호텔 1은 스킵 (초반엔 참가자가 집중해 있어서 의미 없음)
 // - 호텔 2~5에 하나씩 분산, lobby/room 번갈아
@@ -971,6 +975,9 @@ function updateNav() {
 }
 
 function isPageValid(idx) {
+    // ⭐ ADMIN 모드: 항상 통과
+    if (ADMIN_MODE) return true;
+
     const page = document.querySelector(`.page[data-page="${idx}"]`);
     if (!page) return false;
 
@@ -1070,10 +1077,145 @@ function submitData() {
 }
 
 // ============================================================
+// ADMIN MODE (교수님 시연/디버그용)
+// URL에 ?admin=1 붙이면 활성화
+// - →  / PageDown / Space: 다음 페이지
+// - ←  / PageUp           : 이전 페이지
+// - F                     : 현재 페이지 모든 필드 랜덤 채우기
+// - Shift + F             : 현재 페이지부터 끝까지 모든 페이지 자동 채우기
+// ============================================================
+
+function initAdminMode() {
+    if (!ADMIN_MODE) return;
+
+    // 화면 우상단에 작은 배지 표시
+    const badge = document.createElement('div');
+    badge.textContent = 'ADMIN MODE';
+    badge.style.cssText = `
+        position: fixed; top: 60px; right: 16px; z-index: 9999;
+        background: #dc2626; color: #fff;
+        padding: 6px 12px; border-radius: 6px;
+        font-size: 11px; font-weight: 700;
+        letter-spacing: 1px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        pointer-events: none;
+    `;
+    document.body.appendChild(badge);
+
+    // 도움말 (클릭하면 사라짐)
+    const help = document.createElement('div');
+    help.innerHTML = `
+        <strong>Admin shortcuts</strong><br>
+        → / Space: Next &nbsp; ← : Back<br>
+        F : Fill page &nbsp; Shift+F : Fill all<br>
+        <span style="opacity:0.7; font-size:10px;">(click to dismiss)</span>
+    `;
+    help.style.cssText = `
+        position: fixed; top: 90px; right: 16px; z-index: 9999;
+        background: rgba(0,0,0,0.85); color: #fff;
+        padding: 10px 14px; border-radius: 6px;
+        font-size: 11px; line-height: 1.5;
+        cursor: pointer;
+        max-width: 220px;
+    `;
+    help.onclick = () => help.remove();
+    document.body.appendChild(help);
+
+    // 키보드 핸들러
+    document.addEventListener('keydown', (e) => {
+        // input/textarea에 포커스 있으면 무시
+        if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) {
+            if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        }
+
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+            e.preventDefault();
+            nextPage();
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+            e.preventDefault();
+            prevPage();
+        } else if (e.key === 'f' || e.key === 'F') {
+            e.preventDefault();
+            if (e.shiftKey) {
+                autoFillAll();
+            } else {
+                autoFillCurrentPage();
+            }
+        }
+    });
+}
+
+// 현재 페이지의 모든 필드를 랜덤하게 채움
+function autoFillCurrentPage() {
+    const page = document.querySelector('.page.active');
+    if (!page) return;
+
+    // Consent checkbox
+    const consent = page.querySelector('#consentCheck');
+    if (consent && !consent.checked) {
+        consent.checked = true;
+        consent.dispatchEvent(new Event('change'));
+    }
+
+    // Demographics selects (유효한 값으로 자동 선택)
+    const by = page.querySelector('#demo_birthyear');
+    if (by && !by.value) { by.value = '2000'; by.dispatchEvent(new Event('change')); }
+    const gender = page.querySelector('#demo_gender');
+    if (gender && !gender.value) { gender.value = 'Male'; gender.dispatchEvent(new Event('change')); }
+    const purpose = page.querySelector('#demo_purpose');
+    if (purpose && !purpose.value) { purpose.value = 'Business'; purpose.dispatchEvent(new Event('change')); }
+
+    // Likert 버튼 — 각 row에서 랜덤한 값(4~6 사이) 클릭
+    const likertRows = page.querySelectorAll('.likert-scale');
+    likertRows.forEach(scale => {
+        if (scale.querySelector('.selected')) return;  // 이미 선택됨
+        const btns = scale.querySelectorAll('.likert-btn');
+        if (btns.length === 7) {
+            // AC는 정답, 일반 문항은 4~6 랜덤
+            const key = btns[0].dataset.key;
+            let targetValue;
+            if (key && key.startsWith('_AC')) {
+                // attention check: 정답 맞추기
+                const acNum = key.replace('_AC','');
+                targetValue = ATTENTION_CHECKS[acNum]?.expected || 4;
+            } else {
+                targetValue = 4 + Math.floor(Math.random() * 3);  // 4, 5, or 6
+            }
+            btns[targetValue - 1].click();
+        }
+    });
+
+    // WTP select
+    const wtp = page.querySelector('select[id*="_WTP"]');
+    if (wtp && !wtp.value) {
+        wtp.value = '$201 - $300';
+        wtp.dispatchEvent(new Event('change'));
+    }
+
+    updateNav();
+}
+
+// 현재 페이지부터 끝까지 전부 채우고 넘김
+async function autoFillAll() {
+    while (currentPage < totalPages - 1) {
+        autoFillCurrentPage();
+        await new Promise(r => setTimeout(r, 80));
+        if (currentPage >= totalPages - 2) {
+            // 마지막 컨텐츠 페이지 → 제출
+            nextPage();
+            break;
+        }
+        nextPage();
+        await new Promise(r => setTimeout(r, 80));
+    }
+}
+
+// ============================================================
 // INIT
 // ============================================================
 
 buildAllPages();
+initAdminMode();
 </script>
 </body>
 </html>
