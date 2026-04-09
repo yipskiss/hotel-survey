@@ -481,10 +481,16 @@ const startTime = new Date().toISOString();
 // 완료 코드 (Prolific submission code)
 const completionCode = 'HOTEL' + Math.random().toString(36).substr(2,8).toUpperCase();
 
-// Attention Check 위치: 호텔 3 (인덱스 2)의 lobby, 호텔 5 (인덱스 4)의 room
+// Attention Check (4개) — 학계 표준: SOR 문항 사이에 자연스럽게 삽입
+// - 호텔 1은 스킵 (초반엔 참가자가 집중해 있어서 의미 없음)
+// - 호텔 2~5에 하나씩 분산, lobby/room 번갈아
+// - 각 dimension의 중간 지점(afterItemIdx) 다음에 일반 문항처럼 삽입
+// - 서로 다른 expected 값(2, 6, 1, 7)으로 straight-liner 어뷰저 방지
 const ATTENTION_CHECKS = {
-    1: { hotelIdx: 2, space: 'lobby', text: "To verify you are reading carefully, please select '6' for this item.", expected: 6 },
-    2: { hotelIdx: 4, space: 'room',  text: "This is an attention check. Please select 'Strongly Disagree (1)'.",      expected: 1 },
+    1: { hotelIdx: 1, space: 'lobby', dimCode: 'O-1', afterItemIdx: 1, text: "Please select 'Disagree (2)' for this item to show you are reading carefully.",        expected: 2 },
+    2: { hotelIdx: 2, space: 'room',  dimCode: 'S-4', afterItemIdx: 1, text: "Please select 'Agree (6)' for this item to confirm you are paying attention.",          expected: 6 },
+    3: { hotelIdx: 3, space: 'lobby', dimCode: 'O-3', afterItemIdx: 0, text: "Please select 'Strongly Disagree (1)' for this item as an attention check.",            expected: 1 },
+    4: { hotelIdx: 4, space: 'room',  dimCode: 'R-1', afterItemIdx: 0, text: "Please select 'Strongly Agree (7)' for this item to verify response quality.",          expected: 7 },
 };
 
 // ============================================================
@@ -670,8 +676,6 @@ function buildDemoPage(idx) {
                     <option value="">Select...</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
-                    <option value="Non-binary">Non-binary</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
                 </select>
             </div>
 
@@ -700,57 +704,57 @@ function buildHotelPage(idx, hotel, hotelIdx, spaceType, imageFile) {
     const spaceLabel = spaceType === 'lobby' ? 'Lobby' : 'Room';
     const pageKey = `${hotel.id}_${spaceType}`;
 
+    // 현재 호텔/공간에 해당하는 attention check 찾기
+    // (한 공간당 최대 1개만 삽입됨)
+    let pageAC = null;
+    let pageACNum = null;
+    for (const [num, ac] of Object.entries(ATTENTION_CHECKS)) {
+        if (hotelIdx === ac.hotelIdx && spaceType === ac.space) {
+            pageAC = ac;
+            pageACNum = num;
+            break;
+        }
+    }
+
+    // 일반 likert 문항 하나를 그리는 helper (AC와 SOR이 동일한 모양이어야 함)
+    function renderLikertRow(key, text, reverseFlag) {
+        return `
+            <div class="question-row">
+                <div class="question-text">${text}</div>
+                <div>
+                    <div class="likert-mobile-label">1 = Strongly Disagree · · · 7 = Strongly Agree</div>
+                    <div class="likert-scale">
+                        <span class="anchor">Strongly<br>Disagree</span>
+                        ${[1,2,3,4,5,6,7].map(v =>
+                            `<div class="likert-btn" data-key="${key}" data-value="${v}"
+                                 onclick="selectLikert(this,'${key}',${v},${reverseFlag})">${v}</div>`
+                        ).join('')}
+                        <span class="anchor">Strongly<br>Agree</span>
+                    </div>
+                </div>
+            </div>`;
+    }
+
     let questionsHtml = '';
     DIMENSIONS.forEach(dim => {
         questionsHtml += `<div class="dimension-group">`;
         questionsHtml += `<div class="dim-label">${dim.name}</div>`;
-        dim.items.forEach(item => {
+        dim.items.forEach((item, itemIdx) => {
             const key = `${pageKey}_${item.code}`;
             const reverseFlag = item.reverse ? 'true' : 'false';
-            questionsHtml += `
-                <div class="question-row">
-                    <div class="question-text">${item.text}</div>
-                    <div>
-                        <div class="likert-mobile-label">1 = Strongly Disagree · · · 7 = Strongly Agree</div>
-                        <div class="likert-scale">
-                            <span class="anchor">Strongly<br>Disagree</span>
-                            ${[1,2,3,4,5,6,7].map(v =>
-                                `<div class="likert-btn" data-key="${key}" data-value="${v}"
-                                     onclick="selectLikert(this,'${key}',${v},${reverseFlag})">${v}</div>`
-                            ).join('')}
-                            <span class="anchor">Strongly<br>Agree</span>
-                        </div>
-                    </div>
-                </div>`;
+            questionsHtml += renderLikertRow(key, item.text, reverseFlag);
+
+            // AC 삽입: 이 dimension이고, 지정된 item 다음 위치면 바로 다음 줄에 일반 문항처럼 추가
+            if (pageAC && pageAC.dimCode === dim.code && pageAC.afterItemIdx === itemIdx) {
+                const acKey = `_AC${pageACNum}`;
+                questionsHtml += renderLikertRow(acKey, pageAC.text, 'false');
+            }
         });
         questionsHtml += `</div>`;
     });
 
-    // Attention Check 삽입 (해당 호텔/공간에서만)
+    // (attention check는 이제 dimension 안에 섞여 있으므로 별도 블록 없음)
     let acHtml = '';
-    for (const [num, ac] of Object.entries(ATTENTION_CHECKS)) {
-        if (hotelIdx === ac.hotelIdx && spaceType === ac.space) {
-            const acKey = `_AC${num}`;
-            acHtml += `
-            <div class="dimension-group attention-check">
-                <div class="dim-label" style="color:#f39c12;">Quality Check</div>
-                <div class="question-row">
-                    <div class="question-text">${ac.text}</div>
-                    <div>
-                        <div class="likert-mobile-label">1 = Strongly Disagree · · · 7 = Strongly Agree</div>
-                        <div class="likert-scale">
-                            <span class="anchor">Strongly<br>Disagree</span>
-                            ${[1,2,3,4,5,6,7].map(v =>
-                                `<div class="likert-btn" data-key="${acKey}" data-value="${v}"
-                                     onclick="selectLikert(this,'${acKey}',${v},false)">${v}</div>`
-                            ).join('')}
-                            <span class="anchor">Strongly<br>Agree</span>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        }
-    }
 
     // WTP — room 페이지에만
     let wtpHtml = '';
@@ -1033,6 +1037,8 @@ function collectAllData() {
         _gender: document.getElementById('demo_gender')?.value || '',
         _attentionCheck1: responses._attentionCheck1 || 'NA',
         _attentionCheck2: responses._attentionCheck2 || 'NA',
+        _attentionCheck3: responses._attentionCheck3 || 'NA',
+        _attentionCheck4: responses._attentionCheck4 || 'NA',
         _startTime: startTime,
         _endTime: new Date().toISOString(),
         _completionCode: completionCode,
