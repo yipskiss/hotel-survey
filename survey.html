@@ -298,8 +298,8 @@
 // ============================================================
 
 const CONFIG = {
-    // ⚠️ 여기에 Google Sheets Apps Script Web App URL을 넣으세요
-    googleSheetsUrl: '',
+    // ⚠️ Google Sheets Apps Script Web App URL
+    googleSheetsUrl: 'https://script.google.com/macros/s/AKfycbyiwo2_llaphnjuiZhesGAGXFWXkPsoU2Pd3iPfhb7pazWhKbTLEpKD52_Htx1-srw/exec',
 
     // Prolific 완료 return URL (cc 파라미터는 자동 추가됨)
     prolificReturnUrl: 'https://app.prolific.com/submissions/complete',
@@ -479,18 +479,28 @@ let screenedOut = false;
 const startTime = new Date().toISOString();
 
 // 완료 코드 (Prolific submission code)
-const completionCode = 'HOTEL' + Math.random().toString(36).substr(2,8).toUpperCase();
+// ⚠️ Prolific study 생성 시 발급받은 코드로 교체해야 함
+// 코드를 바꾸려면 Prolific study의 Completion paths 섹션에서 확인
+const completionCode = 'CZZUJD88';
 
-// Attention Check (4개) — 학계 표준: SOR 문항 사이에 자연스럽게 삽입
-// - 호텔 1은 스킵 (초반엔 참가자가 집중해 있어서 의미 없음)
-// - 호텔 2~5에 하나씩 분산, lobby/room 번갈아
-// - 각 dimension의 중간 지점(afterItemIdx) 다음에 일반 문항처럼 삽입
-// - 서로 다른 expected 값(2, 6, 1, 7)으로 straight-liner 어뷰저 방지
+// ⭐ ADMIN 모드: URL에 ?admin=1 붙이면 활성화 (교수님 시연/디버그용)
+// - 키보드로 페이지 이동, validation 우회, 자동 채우기 가능
+const ADMIN_MODE = urlParams.get('admin') === '1';
+
+// Attention Check (IMC 4개) — 선행연구 기반 설계
+// 근거: Oppenheimer et al. (2009), Meade & Craig (2012), Curran (2016)
+// - 4개 모두 Instructional Manipulation Check (IMC) 사용
+// - Nonsensical/Bogus item은 7점 척도(중립 존재)에서 판정이 애매해 제외
+// - Likert 양 끝 라벨(Strongly Disagree / Strongly Agree)만 참조
+//   → 참가자가 화면에서 바로 보이는 라벨만 사용, 혼동 방지
+// - 호텔 1 스킵 (참가자가 초반엔 집중해 있어 효과 약함)
+// - 호텔 2~5에 분산, lobby/room 번갈아, S/O/R 차원 고루 배치
+// - 기대값 1과 7 교차 → straight-liner 탐지 (4찍는 사람은 4개 다 FAIL)
 const ATTENTION_CHECKS = {
-    1: { hotelIdx: 1, space: 'lobby', dimCode: 'O-1', afterItemIdx: 1, text: "Please select 'Disagree (2)' for this item to show you are reading carefully.",        expected: 2 },
-    2: { hotelIdx: 2, space: 'room',  dimCode: 'S-4', afterItemIdx: 1, text: "Please select 'Agree (6)' for this item to confirm you are paying attention.",          expected: 6 },
-    3: { hotelIdx: 3, space: 'lobby', dimCode: 'O-3', afterItemIdx: 0, text: "Please select 'Strongly Disagree (1)' for this item as an attention check.",            expected: 1 },
-    4: { hotelIdx: 4, space: 'room',  dimCode: 'R-1', afterItemIdx: 0, text: "Please select 'Strongly Agree (7)' for this item to verify response quality.",          expected: 7 },
+    1: { hotelIdx: 1, space: 'lobby', dimCode: 'O-1', afterItemIdx: 1, text: "To confirm attention, select strongly disagree.",   expected: 1 },
+    2: { hotelIdx: 2, space: 'room',  dimCode: 'S-4', afterItemIdx: 1, text: "To confirm attention, select strongly agree.",      expected: 7 },
+    3: { hotelIdx: 3, space: 'lobby', dimCode: 'O-3', afterItemIdx: 0, text: "To confirm attention, select the leftmost option.", expected: 1 },
+    4: { hotelIdx: 4, space: 'room',  dimCode: 'R-1', afterItemIdx: 0, text: "To confirm attention, select the rightmost option.",expected: 7 },
 };
 
 // ============================================================
@@ -613,13 +623,16 @@ function buildTransitionPage(idx, hotel, hotelNum, totalHotels) {
                 <p style="font-size:15px; color:#6d5800; margin:0; line-height:1.7;">
                     <strong>📌 Scenario:</strong> Imagine you are considering this hotel for a 
                     <strong class="scenario-purpose" style="color:#c0392b;"></strong> trip.
-                    Please evaluate the spaces from that perspective.
+                    Please evaluate the spaces with that purpose in mind.
                 </p>
             </div>
 
             <p style="font-size:15px; color:#555; max-width:500px; margin:0 auto 24px;">
                 You will now evaluate this hotel's <strong>lobby</strong> and <strong>room</strong>.<br>
-                For each space, look around the 360° image, then answer the questions.
+                For each space, explore the 360° view and then answer the questions.
+            </p>
+            <p style="font-size:13px; color:#888; max-width:500px; margin:0 auto 16px; font-style:italic;">
+                ⚠️ Please base your ratings on the design and spatial qualities, not on image quality or resolution.
             </p>
             <div style="display:inline-block; background:#eaf4fc; border-radius:8px; padding:12px 24px; font-size:14px; color:var(--primary);">
                 📋 Lobby evaluation → Room evaluation
@@ -636,11 +649,12 @@ function buildConsentPage(idx) {
             <div class="consent-box">
                 <p><strong>Study Title:</strong> Visual Assessment of Hotel Interior Spaces</p>
                 <p><strong>Purpose:</strong> This study examines how people evaluate hotel interior spaces using 360° panoramic images.</p>
-                <p><strong>Procedure:</strong> You will view 360° panoramic images of hotel lobbies and rooms. For each space, you will look around by dragging the image, then answer evaluation questions. You will evaluate <strong>5 hotels</strong> total (lobby and room for each). The entire survey takes approximately <strong>30 minutes</strong>.</p>
-                <p><strong>Compensation:</strong> $5.00 upon completion (calculated at $10/hour).</p>
+                <p><strong>Procedure:</strong> You will view 360° panoramic images of hotel lobbies and rooms. For each space, you will look around by dragging the image, then answer evaluation questions. You will evaluate <strong>5 hotels in total, including the lobby and room for each hotel</strong>. The entire survey takes approximately <strong>30 minutes</strong>.</p>
+                <p><strong>Note:</strong> Please base your ratings on the design and spatial qualities of the hotel, rather than on the image quality, resolution, or sharpness of the panorama.</p>
+                <p><strong>Compensation:</strong> $5.00 upon completion.</p>
                 <p><strong>Risks:</strong> There are no known risks associated with this study.</p>
-                <p><strong>Confidentiality:</strong> Your responses will be anonymous and used only for academic research purposes. Only your Prolific ID is linked to your data, and only for payment.</p>
-                <p><strong>Voluntary Participation:</strong> Your participation is voluntary. You may withdraw at any time, but you must complete the survey to receive compensation.</p>
+                <p><strong>Confidentiality:</strong> Your responses will be kept confidential and used only for academic research purposes. Your Prolific ID will be collected only for compensation and will not be used to identify you in any reports or publications.</p>
+                <p><strong>Voluntary Participation:</strong> Your participation is voluntary, and you may stop the survey at any time. Compensation will be provided only if you complete the study and submit your response, in accordance with the study payment terms.</p>
             </div>
             <div class="consent-check">
                 <input type="checkbox" id="consentCheck" onchange="updateNav()">
@@ -654,7 +668,7 @@ function buildDemoPage(idx) {
     return `
     <div class="page" data-page="${idx}">
         <div class="card">
-            <h2>About You</h2>
+            <h2>Participant Information</h2>
             <p>Please answer the following questions. Your answers determine your eligibility for this study.</p>
 
             <div class="form-group">
@@ -680,7 +694,7 @@ function buildDemoPage(idx) {
             </div>
 
             <div class="form-group">
-                <label>When you stay at a hotel, what is your <strong>primary</strong> travel purpose?</label>
+                <label>What is the primary purpose of most of your hotel stays?</label>
                 <select id="demo_purpose" onchange="checkScreening(); updateNav()">
                     <option value="">Select...</option>
                     <option value="Business">Business (work trips, conferences, meetings)</option>
@@ -693,7 +707,7 @@ function buildDemoPage(idx) {
 
             <div id="screeningFail" style="display:none; background:#fdf0f0; border:1px solid #e74c3c; border-radius:8px; padding:16px; margin-top:16px;">
                 <p style="color:#c0392b; font-weight:500; margin-bottom:8px;">Thank you for your interest.</p>
-                <p style="color:#555; font-size:14px;">Unfortunately, you do not meet the eligibility criteria for this study. Please return this submission on Prolific.</p>
+                <p style="color:#555; font-size:14px;">Unfortunately, you do not meet the eligibility criteria for this study. Please return your submission on Prolific.</p>
                 <p id="screeningFailReason" style="color:#888; font-size:12px; margin-top:8px;"></p>
             </div>
         </div>
@@ -832,7 +846,8 @@ function buildCompletionPage(idx) {
 // ============================================================
 
 function selectLikert(el, key, value, isReverse) {
-    el.parentElement.querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
+    // closest로 likert-scale까지 올라가서 모든 버튼의 selected 해제
+    el.closest('.likert-scale').querySelectorAll('.likert-btn').forEach(b => b.classList.remove('selected'));
     el.classList.add('selected');
     responses[key] = value;
     // 역코딩: O-2-3, O-2-4 → _R 필드에 8-x 자동 저장
@@ -971,6 +986,9 @@ function updateNav() {
 }
 
 function isPageValid(idx) {
+    // ⭐ ADMIN 모드: 항상 통과
+    if (ADMIN_MODE) return true;
+
     const page = document.querySelector(`.page[data-page="${idx}"]`);
     if (!page) return false;
 
@@ -1031,8 +1049,14 @@ function collectAllData() {
         _assignedGroup: assignedGroup,
         _hotelOrder: assignedHotels.map(h => h.id).join('|'),
         _hotelOrderDetailed: assignedHotels.map(h => `${h.tier}_${h.tierIdx+1}_${h.name}`).join('|'),
-        _generation: participantGeneration,
-        _travelPurpose: participantPurpose,
+        // demographics: DOM에서 직접 읽어서 확실하게 저장
+        _generation: (() => {
+            const by = parseInt(document.getElementById('demo_birthyear')?.value);
+            if (by >= 1997 && by <= 2008) return 'Gen Z';
+            if (by >= 1965 && by <= 1980) return 'Gen X';
+            return '';
+        })(),
+        _travelPurpose: document.getElementById('demo_purpose')?.value || '',
         _birthYear: document.getElementById('demo_birthyear')?.value || '',
         _gender: document.getElementById('demo_gender')?.value || '',
         _attentionCheck1: responses._attentionCheck1 || 'NA',
@@ -1056,7 +1080,13 @@ function submitData() {
     document.getElementById('prolificReturn').href = `${CONFIG.prolificReturnUrl}?cc=${completionCode}`;
 
     // ⚠️ Google Sheets로 전송 (Apps Script Web App)
-    // 여기에 Apps Script URL 넣으세요 → CONFIG.googleSheetsUrl
+    // ADMIN 모드: ?admin=1만이면 저장 안 함 (교수님 시연용)
+    // ADMIN 모드: ?admin=1&save=1이면 저장함 (데이터 테스트용)
+    if (ADMIN_MODE && urlParams.get('save') !== '1') {
+        console.warn('[Survey] ADMIN MODE — data NOT sent to Google Sheets. Add &save=1 to URL to enable saving.');
+        return;
+    }
+
     if (CONFIG.googleSheetsUrl) {
         fetch(CONFIG.googleSheetsUrl, {
             method: 'POST',
@@ -1070,10 +1100,164 @@ function submitData() {
 }
 
 // ============================================================
+// ADMIN MODE (교수님 시연/디버그용)
+// URL에 ?admin=1 붙이면 활성화
+// - →  / PageDown / Space: 다음 페이지
+// - ←  / PageUp           : 이전 페이지
+// - F                     : 현재 페이지 모든 필드 랜덤 채우기
+// - Shift + F             : 현재 페이지부터 끝까지 모든 페이지 자동 채우기
+// ============================================================
+
+function initAdminMode() {
+    if (!ADMIN_MODE) return;
+
+    // 화면 우상단에 작은 배지 표시
+    const badge = document.createElement('div');
+    badge.textContent = 'ADMIN MODE';
+    badge.style.cssText = `
+        position: fixed; top: 60px; right: 16px; z-index: 9999;
+        background: #dc2626; color: #fff;
+        padding: 6px 12px; border-radius: 6px;
+        font-size: 11px; font-weight: 700;
+        letter-spacing: 1px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        pointer-events: none;
+    `;
+    document.body.appendChild(badge);
+
+    // 도움말 (클릭하면 사라짐)
+    const help = document.createElement('div');
+    help.innerHTML = `
+        <strong>Admin shortcuts</strong><br>
+        → / Space: Next &nbsp; ← : Back<br>
+        F : Fill page &nbsp; Shift+F : Fill all<br>
+        <span style="opacity:0.7; font-size:10px;">(click to dismiss)</span>
+    `;
+    help.style.cssText = `
+        position: fixed; top: 90px; right: 16px; z-index: 9999;
+        background: rgba(0,0,0,0.85); color: #fff;
+        padding: 10px 14px; border-radius: 6px;
+        font-size: 11px; line-height: 1.5;
+        cursor: pointer;
+        max-width: 220px;
+    `;
+    help.onclick = () => help.remove();
+    document.body.appendChild(help);
+
+    // 키보드 핸들러
+    document.addEventListener('keydown', (e) => {
+        // input/textarea에 포커스 있으면 무시
+        if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) {
+            if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        }
+
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+            e.preventDefault();
+            nextPage();
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+            e.preventDefault();
+            prevPage();
+        } else if (e.key === 'f' || e.key === 'F') {
+            e.preventDefault();
+            if (e.shiftKey) {
+                autoFillAll();
+            } else {
+                autoFillCurrentPage();
+            }
+        }
+    });
+}
+
+// 현재 페이지의 모든 필드를 랜덤하게 채움
+function autoFillCurrentPage() {
+    const page = document.querySelector('.page.active');
+    if (!page) return;
+
+    // Consent checkbox
+    const consent = page.querySelector('#consentCheck');
+    if (consent && !consent.checked) {
+        consent.checked = true;
+        consent.dispatchEvent(new Event('change'));
+    }
+
+    // Demographics selects
+    const by = page.querySelector('#demo_birthyear');
+    if (by && !by.value) { by.value = '2000'; by.dispatchEvent(new Event('change')); }
+    const gender = page.querySelector('#demo_gender');
+    if (gender && !gender.value) { gender.value = 'Male'; gender.dispatchEvent(new Event('change')); }
+    const purpose = page.querySelector('#demo_purpose');
+    if (purpose && !purpose.value) { purpose.value = 'Business'; purpose.dispatchEvent(new Event('change')); }
+
+    // Likert — likert-scale 단위로 처리 (key당 한 번만 targetValue 계산)
+    const scales = page.querySelectorAll('.likert-scale');
+    scales.forEach(scale => {
+        if (scale.querySelector('.likert-btn.selected')) return; // 이미 선택됨
+
+        const btns = scale.querySelectorAll('.likert-btn');
+        if (btns.length !== 7) return;
+
+        const key = btns[0].dataset.key;
+        if (!key) return;
+
+        // targetValue를 한 번만 계산
+        let targetValue;
+        if (key.startsWith('_AC')) {
+            const acNum = key.replace('_AC','');
+            targetValue = ATTENTION_CHECKS[acNum]?.expected || 4;
+        } else {
+            targetValue = 4 + Math.floor(Math.random() * 3); // 4, 5, or 6
+        }
+
+        // 해당 버튼 찾아서 선택
+        const targetBtn = btns[targetValue - 1];
+        targetBtn.classList.add('selected');
+        responses[key] = targetValue;
+
+        // 역코딩 처리
+        if (targetBtn.getAttribute('onclick')?.includes(',true)')) {
+            responses[key + '_R'] = 8 - targetValue;
+        }
+    });
+
+    // WTP select
+    const wtp = page.querySelector('select[id*="_WTP"]');
+    if (wtp && !wtp.value) {
+        wtp.value = '$201 - $300';
+        responses[wtp.id] = '$201 - $300';
+        wtp.dispatchEvent(new Event('change'));
+    }
+
+    updateNav();
+    console.log(`[Admin] Filled page ${currentPage}, responses count: ${Object.keys(responses).length}`);
+}
+
+// 현재 페이지부터 끝까지 전부 채우고 넘김
+async function autoFillAll() {
+    while (currentPage < totalPages - 1) {
+        // 호텔 페이지는 렌더링 시간이 필요 (360° 뷰어 + 문항 로드)
+        const page = document.querySelector('.page.active');
+        const isHotelPage = page && page.classList.contains('has-viewer');
+        const waitTime = isHotelPage ? 500 : 150;
+
+        await new Promise(r => setTimeout(r, waitTime));
+        autoFillCurrentPage();
+        await new Promise(r => setTimeout(r, 150));
+
+        if (currentPage >= totalPages - 2) {
+            // 마지막 컨텐츠 페이지 → 제출
+            nextPage();
+            break;
+        }
+        nextPage();
+    }
+}
+
+// ============================================================
 // INIT
 // ============================================================
 
 buildAllPages();
+initAdminMode();
 </script>
 </body>
 </html>
