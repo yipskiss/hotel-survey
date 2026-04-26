@@ -468,12 +468,17 @@ const responses = {};
 // Prolific PID 받기 (URL 파라미터)
 const urlParams = new URLSearchParams(window.location.search);
 let participantId = urlParams.get('PROLIFIC_PID') || ('ANON_' + Date.now() + '_' + Math.random().toString(36).substr(2,6));
+let studyId = urlParams.get('STUDY_ID') || '';
+let sessionId = urlParams.get('SESSION_ID') || '';
 
 let assignedGroup = '';
 let assignedHotels = [];
 let participantGeneration = '';
 let participantPurpose = '';
 let screenedOut = false;
+let quotaFull = false;
+
+const QUOTA_PER_PURPOSE = 40;  // Business/Leisure 각각 40명
 
 // 시작 시각
 const startTime = new Date().toISOString();
@@ -536,6 +541,29 @@ function checkScreening() {
     screenedOut = fail;
     failEl.style.display = fail ? 'block' : 'none';
     if (reasonEl) reasonEl.textContent = reason;
+}
+
+// ============================================================
+// QUOTA CHECK — Google Sheets에서 현재 인원 실시간 확인
+// ============================================================
+
+async function checkQuota(purpose) {
+    if (ADMIN_MODE) return true;  // admin은 무조건 통과
+    if (!studyId) return true;    // STUDY_ID 없으면 (테스트) 통과
+    
+    try {
+        const url = `${CONFIG.googleSheetsUrl}?action=quota&studyId=${encodeURIComponent(studyId)}&purpose=${encodeURIComponent(purpose)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        
+        if (data.count >= QUOTA_PER_PURPOSE) {
+            return false;  // 쿼터 가득 참
+        }
+        return true;  // 아직 여유 있음
+    } catch (err) {
+        console.warn('[Quota] Check failed, allowing through:', err);
+        return true;  // API 실패 시 통과시킴 (데이터 손실 방지)
+    }
 }
 
 // ============================================================
@@ -950,8 +978,44 @@ function showPage(idx) {
 }
 
 function nextPage() {
+    // Demographics 페이지(page 1)에서 나갈 때 → 쿼터 체크
+    const page = document.querySelector(`.page[data-page="${currentPage}"]`);
+    const isDemoPage = page && page.querySelectorAll('select').length > 0 && !page.dataset.hotel;
+    
+    if (isDemoPage && !ADMIN_MODE) {
+        const purpose = document.getElementById('demo_purpose')?.value;
+        if (purpose) {
+            const nextBtn = document.getElementById('btnNext');
+            nextBtn.disabled = true;
+            nextBtn.textContent = 'Checking availability...';
+            
+            checkQuota(purpose).then(available => {
+                if (available) {
+                    // 쿼터 OK → 진행
+                    nextBtn.textContent = 'Next';
+                    nextBtn.disabled = false;
+                    proceedToNextPage();
+                } else {
+                    // 쿼터 가득 참 → screen out
+                    quotaFull = true;
+                    screenedOut = true;
+                    const failEl = document.getElementById('screeningFail');
+                    const reasonEl = document.getElementById('screeningFailReason');
+                    if (failEl) failEl.style.display = 'block';
+                    if (reasonEl) reasonEl.textContent = 'Thank you for your interest, but this category is currently full. Please return your submission on Prolific.';
+                    nextBtn.textContent = 'Next';
+                    nextBtn.disabled = true;
+                }
+            });
+            return;  // async 처리 중 — 여기서 멈춤
+        }
+    }
+    
+    proceedToNextPage();
+}
+
+function proceedToNextPage() {
     if (currentPage === totalPages - 2) {
-        // 마지막 컨텐츠 페이지 → 제출 → 완료 페이지
         submitData();
         showPage(currentPage + 1);
         return;
@@ -1046,6 +1110,8 @@ function collectAllData() {
     // 한 행으로 평탄화 (Google Sheets에 한 줄로 저장)
     const payload = {
         _participantId: participantId,
+        _studyId: studyId,
+        _sessionId: sessionId,
         _assignedGroup: assignedGroup,
         _hotelOrder: assignedHotels.map(h => h.id).join('|'),
         _hotelOrderDetailed: assignedHotels.map(h => `${h.tier}_${h.tierIdx+1}_${h.name}`).join('|'),
