@@ -486,7 +486,7 @@ const startTime = new Date().toISOString();
 // 완료 코드 (Prolific submission code)
 // ⚠️ Prolific study 생성 시 발급받은 코드로 교체해야 함
 // 코드를 바꾸려면 Prolific study의 Completion paths 섹션에서 확인
-const completionCode = 'CZZUJD88';
+const completionCode = urlParams.get('CC') || 'CZZUJD88';  // Prolific 코드 또는 기본값
 
 // ⭐ ADMIN 모드: URL에 ?admin=1 붙이면 활성화 (교수님 시연/디버그용)
 // - 키보드로 페이지 이동, validation 우회, 자동 채우기 가능
